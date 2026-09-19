@@ -5,7 +5,7 @@
 **Level:** Master’s semester project  
 **Field:** Application security, AI-assisted testing, privacy of health data  
 **Duration:** one semester (12–14 working weeks)  
-**Indicative load:** 240–280 hours (~10–12 ECTS)  
+**Indicative load:** 240–280 hours (~15 ECTS)  
 **Test targets:** the **five** self-hosted open-source fitness/health apps in §5 (pass: at least four running)  
 **Empirical knowledge level:** **black-box only** (white-box and grey-box out of the empirical scope, as in Peng et al.)  
 **Tools:** OWASP ZAP, ProjectDiscovery Nuclei, plus a **new AutoPT agent** (student-built, Ollama and/or a cheap paid chat API) run as HITL, as a **multi-agent swarm**, and as an **overnight loop**  
@@ -592,7 +592,7 @@ A mixed result is acceptable: “the AI named broken object-level authorization 
 | Hardening checklist | 2–4 pages for the **locked class** across the family |
 | Demo | 10–15 min, at least two apps shown |
 
-The catalog `AI-Pentesting-Tools-Research-Catalog.md` is background. This project **uses three tools**, it does not rescan the market.
+The catalog [`AI-Pentesting-Tools-Research-Catalog.md`](AI-Pentesting-Tools-Research-Catalog.md) is background. This project **uses three tools**, it does not rescan the market. Section-by-section reading notes for the five papers are in [`papers/`](papers/README.md).
 
 ---
 

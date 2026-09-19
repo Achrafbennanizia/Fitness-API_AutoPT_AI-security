@@ -1,6 +1,6 @@
 # What each mind map means, and how tools were used
 
-Companion to `Hackers-or-Hallucinators-Mindmaps.md` and Peng et al., arXiv:2604.05719.
+Companion to [Hackers-or-Hallucinators-Mindmaps.md](Hackers-or-Hallucinators-Mindmaps.md) and Peng et al., arXiv:2604.05719. The long section guide is [Hackers-or-Hallucinators-Paper-Sections-Explained.md](Hackers-or-Hallucinators-Paper-Sections-Explained.md).
 
 The diagrams are **trees of the paper**, not attack playbooks. “Tools” here means what the **AutoPT agents** were allowed to call inside an educational CTF range.
 

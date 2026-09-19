@@ -10,7 +10,7 @@ Password pattern: `LabUser-ChangeMe-2026!` plus a per-user suffix so two account
 | FitTrackee | alice_lab | alice.lab@example.test | bob_lab | bob.lab@example.test |
 | openGym | alice_lab | alice.lab@example.test | bob_lab | bob.lab@example.test |
 | FitnessTrack | alice_lab | alice.lab@example.test | bob_lab | bob.lab@example.test |
-| Endurain | alice_lab | alice.lab@example.test | bob_lab | bob.lab@example.test |
+| Endurain | alice_lab | alice.lab@example.com | bob_lab | bob.lab@example.com |
 
 Passwords (lab only):
 

@@ -1,4 +1,2 @@
-services:
-  app:
-    ports:
-      - "127.0.0.1:3103:3001"
+# Host bind is set in docker-compose.yml (127.0.0.1:3103).
+services: {}

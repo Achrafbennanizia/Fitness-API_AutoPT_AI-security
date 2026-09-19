@@ -1,7 +1,2 @@
-services:
-  postgres:
-    ports:
-      - "127.0.0.1:5433:5432"
-  workout_cool:
-    ports:
-      - "127.0.0.1:3101:3000"
+# Host binds live in docker-compose.yml (127.0.0.1:3101 and 127.0.0.1:5433).
+services: {}

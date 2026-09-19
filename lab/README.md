@@ -13,15 +13,24 @@ Authorized **localhost** instances of the five fitness apps in the semester prop
 | `token-log.csv` | LLM call log (empty until T3) |
 | `synthetic-accounts.md` | Two fake users per app |
 | `phase1-status.md` | Done-when checklist |
+| `overrides/` | Extra compose flags (CPU platform). Host ports live in each app `docker-compose.yml`. |
+| `scripts/up-one.sh` | Start one named stack |
 
-## Ports (unique)
+## Ports (unique, loopback)
 
 | App | Host URL |
 | --- | --- |
 | Workout.cool | http://127.0.0.1:3101 |
-| FitTrackee | http://127.0.0.1:5000 |
+| FitTrackee | http://127.0.0.1:5100 |
 | openGym | http://127.0.0.1:3102 |
 | FitnessTrack | http://127.0.0.1:3103 |
-| Endurain | http://127.0.0.1:8080 |
+| Endurain | http://127.0.0.1:18080 |
 
 Start **one** compose project, verify two accounts, stop it, then the next.
+
+```bash
+export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
+./lab/scripts/up-one.sh fitnesstrack   # or fittrackee | workout-cool | opengym | endurain
+```
+
+Do not commit JWTs, session cookies, or `.env` files from `apps/`.

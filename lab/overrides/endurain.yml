@@ -1,4 +1,2 @@
-services:
-  endurain:
-    ports:
-      - "127.0.0.1:18080:8080"
+# Host bind is in docker-compose.yml (127.0.0.1:18080).
+services: {}
