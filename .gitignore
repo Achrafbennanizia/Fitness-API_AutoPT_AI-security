@@ -1,0 +1,7 @@
+# Phase 1 cloned instruments (pinned commits recorded in lab/pins.md)
+lab/apps/
+lab/apps-data/
+**/.env
+**/.env.local
+*.log
+.DS_Store

@@ -1,0 +1,7 @@
+services:
+  fittrackee-db:
+    platform: linux/amd64
+  fittrackee:
+    platform: linux/amd64
+    ports:
+      - "127.0.0.1:5100:5000"
