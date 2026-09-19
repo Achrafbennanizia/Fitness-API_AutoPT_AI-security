@@ -5,8 +5,13 @@
 **Level:** Master’s semester project  
 **Field:** Application security, AI-assisted testing, privacy of health data  
 **Duration:** one semester (12–14 working weeks)  
+<<<<<<< HEAD
 **Indicative load:** 240–280 hours (~10–12 ECTS)  
 **Test targets:** the **five** self-hosted open-source fitness/health apps in §5 (pass: at least four running)  
+=======
+**Indicative load:** 240–280 hours (~15 ECTS)  
+**Test target:** one self-hosted open-source fitness/health app (primary), chosen from a shortlist of six  
+>>>>>>> refs/remotes/origin/main
 **Empirical knowledge level:** **black-box only** (white-box and grey-box out of the empirical scope, as in Peng et al.)  
 **Tools:** OWASP ZAP, ProjectDiscovery Nuclei, plus a **new AutoPT agent** (student-built, Ollama) run as HITL, as a **multi-agent swarm**, and as an **overnight loop**  
 **AI scientific job:** **define the main weakness class** of this product family, then test that class on every running app  
