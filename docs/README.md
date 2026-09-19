@@ -5,6 +5,7 @@ Reading and planning files for the semester project. Runtime notes live under [`
 ```
 docs/
 ├── Master-Semester-Project-Proposal.md
+├── Phase-1-Lab-Log.md
 ├── AI-Pentesting-Tools-Research-Catalog.md
 └── papers/          ← five cited papers
 ```
@@ -12,6 +13,7 @@ docs/
 | File | Use |
 | --- | --- |
 | [Master-Semester-Project-Proposal.md](Master-Semester-Project-Proposal.md) | Official proposal (scope, RQs, method, ethics) |
+| [Phase-1-Lab-Log.md](Phase-1-Lab-Log.md) | Phase 1 outcome, problems, and fixes |
 | [AI-Pentesting-Tools-Research-Catalog.md](AI-Pentesting-Tools-Research-Catalog.md) | Background landscape; not a fourth scored tool |
 | [papers/](papers/README.md) | Section guides for the five cited papers |
 

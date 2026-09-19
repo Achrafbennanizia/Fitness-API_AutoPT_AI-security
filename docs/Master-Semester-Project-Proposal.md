@@ -447,7 +447,7 @@ This is the operational spine. Each step has a **goal** (why it exists) and a **
 **Phase goal:** the project is a **Peng-taxonomy multi-app case study**, not a casual one-target demo.  
 **Done when:** signed ethics page + protocol + `ollama run` screenshot (+ API spend-limit screenshot if the paid path will be used).
 
-### Phase 1 — Bring up the corpus (weeks 2–4)
+### Phase 1 — Bring up the corpus (weeks 2)
 
 | Step | What | Goal of this step |
 | --- | --- | --- |
@@ -458,6 +458,8 @@ This is the operational spine. Each step has a **goal** (why it exists) and a **
 
 **Phase goal:** a **set** of authorized, pinned, multi-user fitness systems.  
 **Done when:** ≥ 4 apps accept two synthetic users on `127.0.0.1`.
+
+Bring-up outcome, problems, and fixes (2026-09-19): [`Phase-1-Lab-Log.md`](Phase-1-Lab-Log.md).
 
 ### Phase 2 — Black-box screen, all apps (weeks 5–6)
 
@@ -601,7 +603,7 @@ The catalog [`AI-Pentesting-Tools-Research-Catalog.md`](AI-Pentesting-Tools-Rese
 1. Introduction and RQs  
 2. Background: fitness-app threats (**Papageorgiou**) + access-control evidence shape (**Sun**) + **Peng taxonomy** (knowledge levels, six dimensions, findings we adopt; **why empirical work is black-box only**)  
 3. Related work (five papers with the §6.4 map + tools not run)  
-4. Targets: the five-app corpus, what started, what dropped  
+4. Targets: the five-app corpus, what started, what dropped ([`Phase-1-Lab-Log.md`](Phase-1-Lab-Log.md))  
 5. Method: three tools, **findings→techniques map (§6.5–6.6)**, black-box protocol, **AI main-class definition**, metrics, ethics, token cap  
 6. Strategy recap (Phase 0–8, one page)  
 7. Results: RQ1–RQ3 tables (class lock, hit rate, hallucinations, retest)  

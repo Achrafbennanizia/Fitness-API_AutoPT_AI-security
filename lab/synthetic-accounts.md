@@ -16,3 +16,11 @@ Passwords (lab only):
 
 - Alice: `LabUser-ChangeMe-2026!A`
 - Bob: `LabUser-ChangeMe-2026!B`
+
+Login notes:
+
+- FitnessTrack uses **username** `alice_lab` / `bob_lab` (no email on register).
+- FitTrackee login body uses **email**, not username.
+- Endurain uses **username** + form body + header `X-Client-Type: mobile`. App also has default `admin` / `admin`. Signup is disabled; Alice/Bob were created by admin then language set to `en` in Postgres so login serialization succeeds.
+- openGym has no passwords: WebAuthn passkeys. Profiles `alice_lab` / `bob_lab` are reserved names; they were **not** created in Phase 1.
+

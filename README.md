@@ -10,6 +10,7 @@ rpk/
 ├── docs/                              reading and planning
 │   ├── README.md
 │   ├── Master-Semester-Project-Proposal.md
+│   ├── Phase-1-Lab-Log.md             Phase 1 problems and fixes
 │   ├── AI-Pentesting-Tools-Research-Catalog.md
 │   └── papers/                        five cited papers
 │       ├── README.md
@@ -27,12 +28,13 @@ rpk/
     ├── facts-file.md
     ├── synthetic-accounts.md
     ├── phase1-status.md
+    ├── patches/                       re-apply after clone
     ├── overrides/                     compose bind-to-localhost
     └── apps/                          git clones (gitignored)
 ```
 
 | Path | What it is |
 | --- | --- |
-| [`docs/`](docs/README.md) | Proposal, tool catalog, paper reading guides |
+| [`docs/`](docs/README.md) | Proposal, Phase 1 lab log, tool catalog, paper reading guides |
 | [`docs/papers/`](docs/papers/README.md) | Section-by-section notes for Deng, Happe, Peng, Sun, Papageorgiou |
 | [`lab/`](lab/README.md) | Docker corpus, pins, facts file, account notes |
