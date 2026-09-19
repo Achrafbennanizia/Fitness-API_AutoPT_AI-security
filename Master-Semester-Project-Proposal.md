@@ -5,7 +5,7 @@
 **Level:** Master’s semester project  
 **Field:** Application security, AI-assisted testing, privacy of health data  
 **Duration:** one semester (12–14 working weeks)  
-**Indicative load:** 240–280 hours (~10–12 ECTS)  
+**Indicative load:** 240–280 hours (~15 ECTS)  
 **Test target:** one self-hosted open-source fitness/health app (primary), chosen from a shortlist of six  
 **Empirical knowledge level:** **black-box only** (white-box and grey-box out of the empirical scope, as in Peng et al.)  
 **Tools (exactly three):** OWASP ZAP, ProjectDiscovery Nuclei, PentestGPT (human-in-the-loop + Ollama)  
