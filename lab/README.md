@@ -35,6 +35,6 @@ export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
 ./lab/scripts/up-one.sh fitnesstrack   # or fittrackee | workout-cool | opengym | endurain
 ```
 
-Phase 1 **passed** (4 / 5 two-user apps). Full problem/fix log: [`docs/Phase-1-Lab-Log.md`](../docs/Phase-1-Lab-Log.md).
+Phase 1 **passed** (4 / 5 two-user apps). Outcome: [`docs/Phase-1-Lab-Log.md`](../docs/Phase-1-Lab-Log.md).
 
 Do not commit JWTs, session cookies, or `.env` files from `apps/`.

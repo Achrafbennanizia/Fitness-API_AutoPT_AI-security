@@ -10,7 +10,7 @@ rpk/
 ├── docs/                              reading and planning
 │   ├── README.md
 │   ├── Master-Semester-Project-Proposal.md
-│   ├── Phase-1-Lab-Log.md             Phase 1 problems and fixes
+│   ├── Phase-1-Lab-Log.md             Phase 1 corpus outcome
 │   ├── Papers-Tools-Extract.md        tools named in the five papers
 │   ├── AI-Pentesting-Tools-Research-Catalog.md
 │   └── papers/                        five cited papers

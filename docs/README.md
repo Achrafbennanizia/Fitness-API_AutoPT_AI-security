@@ -13,7 +13,7 @@ docs/
 | File | Use |
 | --- | --- |
 | [Master-Semester-Project-Proposal.md](Master-Semester-Project-Proposal.md) | Official proposal (scope, RQs, method, ethics) |
-| [Phase-1-Lab-Log.md](Phase-1-Lab-Log.md) | Phase 1 outcome, problems, and fixes |
+| [Phase-1-Lab-Log.md](Phase-1-Lab-Log.md) | Phase 1 corpus outcome (pins, two-user status) |
 | [Papers-Tools-Extract.md](Papers-Tools-Extract.md) | Named tools in the five papers (who used them, how, why) |
 | [AI-Pentesting-Tools-Research-Catalog.md](AI-Pentesting-Tools-Research-Catalog.md) | Background landscape; not a fourth scored tool |
 | [papers/](papers/README.md) | Section guides for the five cited papers |

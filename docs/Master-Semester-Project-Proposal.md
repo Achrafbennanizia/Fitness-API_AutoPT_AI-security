@@ -2,14 +2,10 @@
 
 | | |
 | --- | --- |
-| **Institution** | *[University / faculty — complete]* |
-| **Department** | *[e.g. Computer Science, Software Engineering, or Information Security]* |
 | **Programme** | Master’s degree — semester project |
 | **Document type** | Project proposal (for supervisory approval) |
 | **Academic year** | 2026–2027 |
 | **Student** | Achraf |
-| **Supervisor** | *[Name, academic title]* |
-| **Co-supervisor (optional)** | *[Name, or “—”]* |
 | **Date** | 20 September 2026 |
 | **Version** | 1.0 |
 | **Status** | Submitted for approval |
@@ -25,13 +21,13 @@ Black-Box Evaluation of Three Security Testing Tools Across Open-Source Fitness 
 
 **Empirical knowledge level.** Black-box only. White-box and grey-box methods are defined in the background chapter and are **not** executed.
 
-**Test corpus.** Five self-hosted open-source fitness and health applications (Section 5). A pass requires at least four instances running on the student’s laptop.
+**Test corpus.** Five self-hosted open-source fitness and health applications (Section 5). A pass requires at least four instances running on authorised localhost.
 
-**Instruments.** OWASP ZAP; ProjectDiscovery Nuclei; a student-built AutoPT agent (Ollama and/or one capped paid chat API), evaluated in three modes: human-in-the-loop (HITL), multi-agent swarm, and one overnight loop.
+**Instruments.** OWASP ZAP; ProjectDiscovery Nuclei; a student-built AutoPT agent, evaluated in three modes: human-in-the-loop (HITL), multi-agent swarm, and one overnight loop.
 
 **Taxonomy.** Peng, Li, You, et al. (2026), *Hackers or Hallucinators?*, arXiv:2604.05719.
 
-**Compute and cost.** Personal laptop only (no GPU cluster, no cloud VMs). Local Ollama by default (€0). Optional paid chat API (preferred: Mistral Small) with a hard semester cap of **€50**.
+**LLM backbones.** Local models and cloud LLMs are both allowed. They are backbones of the same agent (T3), not extra scored products. The report names the model and whether each call was local or cloud.
 
 **Nature of work.** Applied research and a small, defensive laboratory study on authorised localhost instances. No production systems, no exploit publication.
 
@@ -41,7 +37,7 @@ Black-Box Evaluation of Three Security Testing Tools Across Open-Source Fitness 
 
 This semester project applies the architectural taxonomy of Peng et al. (2026) to a corpus of five self-hosted open-source fitness applications (Workout.cool, FitTrackee, openGym, FitnessTrack, Endurain; at least four must run). The product family is motivated by Papageorgiou et al. (2018), who documented an alarming state of practice in freeware mHealth applications. Two-account evidence for access-control failures follows Sun et al. (2011). Human-in-the-loop method and truncated memory follow Deng et al. (2024). Sparring-partner use of language models and caution about unsupervised loops follow Happe and Cito (2023).
 
-In line with Peng et al., white-box and grey-box work are outside the empirical scope. After a black-box screen with OWASP ZAP and Nuclei, a new AutoPT agent (local Ollama and/or one cheap paid chat API, preferred Mistral Small, hard cap €50) names the main weakness class of the family as a single OWASP API Security Top 10 identifier. That class is then tested under the same black-box rules on every running application, including a HITL campaign, a multi-agent swarm, and one overnight loop on a representative target. Findings are accepted only with saved HTTP evidence, so that hallucinations and false-success claims can be counted. A short hardening pass and black-box retest are performed on one or two representative forks; the resulting checklist addresses the class across the family. Cloud GPUs and commercial AutoPT products are out of scope. Confirmed issues are labelled with OWASP API Top 10 and MITRE ATT&CK. The intended outcome is a measured multi-application case study: five applications, an AI-named main weakness, black-box protocol only, at most 80 interactive LLM calls plus a bounded overnight budget under €50, and a 20–30 page report.
+In line with Peng et al., white-box and grey-box work are outside the empirical scope. After a black-box screen with OWASP ZAP and Nuclei, a new AutoPT agent — using a **local LLM, a cloud LLM, or both** as backbones — names the main weakness class of the family as a single OWASP API Security Top 10 identifier. That class is then tested under the same black-box rules on every running application, including a HITL campaign, a multi-agent swarm, and one overnight loop on a representative target. Findings are accepted only with saved HTTP evidence, so that hallucinations and false-success claims can be counted. A short hardening pass and black-box retest are performed on one or two representative forks; the resulting checklist addresses the class across the family. Commercial AutoPT products are out of scope as scored tools. Confirmed issues are labelled with OWASP API Top 10 and MITRE ATT&CK. The intended outcome is a measured multi-application case study: five applications, an AI-named main weakness, black-box protocol only, and a 20–30 page report.
 
 **Keywords:** black-box testing; API security; automated penetration testing (AutoPT); large language models; OWASP API Top 10; mHealth; human-in-the-loop; OWASP ZAP; Nuclei.
 
@@ -53,7 +49,7 @@ In line with Peng et al., white-box and grey-box work are outside the empirical 
 | --- | --- | --- | --- |
 | 1.0 | 20 September 2026 | Achraf | Proposal submitted for supervisory approval |
 
-Related laboratory notes (not part of this approval text): Phase 1 bring-up log, paper reading notes, and tool extract under `docs/`.
+Related laboratory notes (not part of this approval text): Phase 1 corpus outcome, paper reading notes, and tool extract under `docs/`.
 
 ---
 
@@ -79,8 +75,7 @@ Related laboratory notes (not part of this approval text): Phase 1 bring-up log,
 18. [Request for approval](#18-request-for-approval)  
 19. [References](#19-references)  
 
-Appendix A. [Kick-off checklist](#appendix-a-kick-off-checklist)  
-Appendix B. [Signature page](#appendix-b-signature-page)
+Appendix A. [Kick-off checklist](#appendix-a-kick-off-checklist)
 
 ---
 
@@ -90,7 +85,7 @@ Fitness and health applications store sensitive data: workouts, weight, heart ra
 
 The typical family defect is not a capture-the-flag flag. Sun et al. [4] showed that access-control failures are application-specific: hiding a link is not an enforcement check. The appropriate unit of evidence is **two roles (or two users) and an object URL**. Their static PHP analyser is not executed here (white-box and grey-box are out of empirical scope). The finding that is reused is: a confirmed row is a weaker session that still receives another user’s object. That two-account HTTP protocol is specified in Sections 5.2 and 9.1.
 
-Language-model testers are already plausible, but they are not a substitute for evidence. Happe and Cito [2] showed that GPT-class models can act as sparring partners (high-level plans; a low-level command loop on an authorised laboratory virtual machine), while documenting instability, invented commands, and dual-use risk. They refused phishing content and kept a human in the loop. Deng et al. [1] measured that off-the-shelf chat loses global context (context rot, last-turn bias, fabricated tool flags) and that a HITL split—task tree, truncated dumps, human executor—raises sub-task completion relative to naive GPT-3.5. Their live Hack The Box run still cost approximately USD 131 of GPT-4, which is why this laboratory caps paid tokens at €50. Peng et al. [3] showed that the subsequent wave of AutoPT papers lacked (1) a shared architectural taxonomy and (2) a fair comparison under one protocol. Their bake-off exceeds a semester. What a master’s student can complete is to take that taxonomy as the **language of the method** and answer a smaller, still original question:
+Language-model testers are already plausible, but they are not a substitute for evidence. Happe and Cito [2] showed that GPT-class models can act as sparring partners (high-level plans; a low-level command loop on an authorised laboratory virtual machine), while documenting instability, invented commands, and dual-use risk. They refused phishing content and kept a human in the loop. Deng et al. [1] measured that off-the-shelf chat loses global context (context rot, last-turn bias, fabricated tool flags) and that a HITL split—task tree, truncated dumps, human executor—raises sub-task completion relative to naive GPT-3.5. Their live Hack The Box run still cost approximately USD 131 of GPT-4; cost and model identity are therefore reported, but this project does not fix a vendor or a euro ceiling. Peng et al. [3] showed that the subsequent wave of AutoPT papers lacked (1) a shared architectural taxonomy and (2) a fair comparison under one protocol. Their bake-off exceeds a semester. What a master’s student can complete is to take that taxonomy as the **language of the method** and answer a smaller, still original question:
 
 > Across multiple self-hosted fitness applications, which main weakness class does a new AutoPT agent name from black-box HTTP evidence; do ZAP, Nuclei, a HITL campaign, a multi-agent swarm, and an overnight loop confirm that class; and how much of the AI output is evidence rather than hallucination?
 
@@ -98,11 +93,11 @@ Peng et al. found that extra agents, large Kali menus, and mismatched knowledge 
 
 1. one traditional black-box DAST scanner (OWASP ZAP);
 2. one template-based black-box scanner (Nuclei, HTTP templates only);
-3. one new AutoPT agent (student-built, classified on Peng’s six dimensions, Ollama and/or a capped paid chat API) in three modes: HITL single-agent, multi-agent swarm, overnight loop.
+3. one new AutoPT agent (student-built, classified on Peng’s six dimensions, local and/or cloud LLM) in three modes: HITL single-agent, multi-agent swarm, overnight loop.
 
 The student does not pre-commit to a favourite class such as broken object-level authorisation. The agent proposes one OWASP API class; HTTP evidence across applications accepts or rejects that claim. A short fix list is applied on one or two representative forks (not every application). The same black-box protocol is retested there. Confirmed issues are labelled with OWASP API Top 10 and MITRE ATT&CK. A hardening checklist for the class is written for the whole family.
 
-This proposal is sized so that the work can be finished in one semester, on a personal laptop, without repeating Peng et al.’s multi-billion-token comparison. Paid tokens are a capped backbone (Section 9.0), not a second scored product.
+This proposal is sized so that the work can be finished in one semester without repeating Peng et al.’s multi-billion-token comparison. Local and cloud LLMs are interchangeable backbones of T3 (Section 9.0), not extra scored products.
 
 ---
 
@@ -122,7 +117,7 @@ The five papers already answer pieces of this question, not the joint question:
 
 Peng et al. explicitly set white-box and grey-box outside their empirical scope. This project follows that empirical boundary. Vendor material mixes knowledge levels, rarely reports false-success rates, and usually demonstrates a single product.
 
-**Gap.** A small, reproducible, defensive case study that (a) uses Peng’s taxonomy, (b) runs a black-box-only protocol on multiple fitness products rather than one CTF or one application, (c) lets a new AutoPT agent define the main weakness class before the focused campaign, and (d) compares HITL, swarm, and overnight modes (Happe’s plan versus loop; Deng’s HITL versus Peng’s swarm warning) on a laptop with local models and an optional paid API under €50.
+**Gap.** A small, reproducible, defensive case study that (a) uses Peng’s taxonomy, (b) runs a black-box-only protocol on multiple fitness products rather than one CTF or one application, (c) lets a new AutoPT agent define the main weakness class before the focused campaign, and (d) compares HITL, swarm, and overnight modes (Happe’s plan versus loop; Deng’s HITL versus Peng’s swarm warning), with local and/or cloud LLMs as T3 backbones.
 
 ---
 
@@ -143,8 +138,8 @@ No research question requires writing exploits, a full kill-chain, grey-box or w
 ## 4. Objectives
 
 1. Deploy the five self-hosted fitness applications in Section 5 (target five; minimum four for a pass).
-2. Bind each instance to `127.0.0.1` with two synthetic user accounts (unique ports; one stack at a time on 8 GB RAM).
-3. Build a new AutoPT agent (thin orchestrator: facts file, small HTTP tool menu, Ollama and/or one paid chat API under the €50 cap) and classify it with Peng’s six dimensions (Section 6.2).
+2. Bind each instance to `127.0.0.1` with two synthetic user accounts (unique ports; one stack at a time if memory requires it).
+3. Build a new AutoPT agent (thin orchestrator: facts file, small HTTP tool menu, local and/or cloud LLM) and classify it with Peng’s six dimensions (Section 6.2).
 4. Run the black-box screen on every running application (ZAP and Nuclei; no source and no OpenAPI in the prompt).
 5. Define the main weakness with the agent: one HITL session that may see only (i) public README or feature bullets, (ii) truncated ZAP/Nuclei class names, (iii) observed HTTP routes from normal registration. Required output: exactly one OWASP API Top 10 class and a one-sentence defender meaning. The human locks that class for the remainder of the semester, or records a later contradiction.
 6. Run a focused black-box campaign of that class with the agent in HITL on every running application; run a multi-agent swarm and one overnight loop on one representative application.
@@ -169,14 +164,14 @@ These five applications constitute the experiment. A row is dropped only if it f
 | 1 | Workout.cool | [Snouzy/workout-cool](https://github.com/Snouzy/workout-cool) | MIT coaching platform (plans, exercise database, progress). Docker Compose. | First stack; TypeScript/Next; plan and history identifiers. |
 | 2 | FitTrackee | [SamR1/FitTrackee](https://github.com/SamR1/FitTrackee) | Self-hosted outdoor tracker (GPX, maps, workouts). Flask and Vue; Docker. | GPS- and health-adjacent files; per-user activities. |
 | 3 | openGym | [DuarteSantos8/openGym](https://github.com/DuarteSantos8/openGym) | Gym and body-weight tracker; passkeys; Compose. | Smaller surface; passkeys visible from the outside. |
-| 4 | FitnessTrack | [Gman0909/FitnessTrack](https://github.com/Gman0909/FitnessTrack) | Progressive-overload strength logger; Docker and SQLite. | Light laptop target; two-account set logs. |
+| 4 | FitnessTrack | [Gman0909/FitnessTrack](https://github.com/Gman0909/FitnessTrack) | Progressive-overload strength logger; Docker and SQLite. | Light stack; two-account set logs. |
 | 5 | Endurain | [endurain-project/endurain](https://github.com/endurain-project/endurain) (Codeberg is canonical) | Strava-class tracker (GPX/TCX/FIT, activity privacy, followers). Compose, PostgreSQL, Redis. | Heaviest stack; skip with a written reason if it will not start. |
 
 If an application does not start cleanly, one extra self-hosted multi-user Docker fitness application (for example LibreFit) may be substituted so that the corpus still has at least four running instances. Closed commercial applications (Hevy, Strong, MyFitnessPal) and university gym production systems are excluded.
 
 Optional version pair on one application only (if the supervisor requires a “known CVE class” story in the sense of Peng §5.6.2): pin one older laboratory image and one newer image that the maintainers mark as fixed, one stack at a time, still on localhost. Not required for a pass.
 
-Bring-up outcome, problems, and fixes (19 September 2026) are recorded in [`Phase-1-Lab-Log.md`](Phase-1-Lab-Log.md). That log is an operational annex, not a change of scientific scope.
+Bring-up outcome (19 September 2026): [`Phase-1-Lab-Log.md`](Phase-1-Lab-Log.md). That log is an operational annex, not a change of scientific scope.
 
 ### 5.2 Minimum features (every application that remains in the corpus)
 
@@ -193,7 +188,7 @@ Source of a fork is used later to apply fixes on the representative application(
 | --- | --- | --- |
 | Screen | ZAP and Nuclei | Every running application |
 | AI main-class definition | New AutoPT agent, HITL, family-level | Once (truncated evidence from all screens) |
-| Focused HITL test | New agent, single-agent HITL, locked class | Every running application, small call budget each |
+| Focused HITL test | New agent, single-agent HITL, locked class | Every running application |
 | Swarm | New agent, two or three prompt-defined roles, shared facts file | One representative application |
 | Overnight loop | Unattended run, localhost kill switch | One representative application, one night |
 | Fix and retest | Five to eight fixes, then ZAP, Nuclei, and HITL | One or two representative forks that showed the class |
@@ -214,7 +209,7 @@ This project does not rerun Peng et al.’s thirteen-framework XBOW experiment. 
 | Grey-box | Partial prior knowledge (insider-like access: maps, source hints, planted credentials beyond normal registration) | Out of the empirical scope. Same cut as Peng’s bake-off. No Semgrep campaign, no source in prompts, no OpenAPI dump as tester input. |
 | Black-box | Zero internals; only external interfaces | The only empirical protocol. ZAP, Nuclei, and the new AutoPT agent (HITL, swarm, overnight) see only localhost HTTP. No source, no architecture notes in the prompt. Public README bullets are allowed (anyone can read them). |
 
-Peng’s AutoPT bake-off was black-box only. This project keeps that empirical cut and moves the target from CTF/XBOW to a multi-application fitness corpus, with ZAP, Nuclei, and a new laptop AutoPT agent (HITL, swarm, overnight) instead of thirteen frameworks.
+Peng’s AutoPT bake-off was black-box only. This project keeps that empirical cut and moves the target from CTF/XBOW to a multi-application fitness corpus, with ZAP, Nuclei, and a new AutoPT agent (HITL, swarm, overnight) instead of thirteen frameworks.
 
 Classic human models listed in the survey (Kill Chain, PTES, NIST SP 800-115, ATT&CK) remain labels and background, not a Caldera laboratory.
 
@@ -236,7 +231,7 @@ Classic human models listed in the survey (Kill Chain, PTES, NIST SP 800-115, AT
 3. **More tools are not necessarily better.** Small HTTP set; ZAP, Nuclei, one new agent (three modes, not three extra products).
 4. **Knowledge bases only if they match this application.** No generic payload wiki.
 5. **Hallucinations are structural.** Never treat the model’s prose as success or as the main weakness; require a saved request and response (overnight included).
-6. **Do not treat software-engineering-bench fame as AutoPT skill.** The scientific object is a small student-run model (local 3B/7B, or one cheap API such as Mistral Small), not a frontier coding agent.
+6. **Do not treat software-engineering-bench fame as AutoPT skill.** The scientific object is the student-built agent plus the named backbone(s), local and/or cloud, not a claim about frontier coding agents in general.
 
 ### 6.4 How the other four papers support the same design
 
@@ -247,7 +242,7 @@ Peng et al. supply the vocabulary. The other four papers justify design choices.
 | mHealth freeware already fails known privacy and security practice; data are sensitive by nature and by law [5] | Corpus = fitness/health APIs; synthetic users only; no production SaaS; family checklist as the defender output |
 | Access control has no single sanitiser; success = weaker role still receives the privileged page or object [4] | Two accounts on every application; confirm with HTTP status and body, not “the model said IDOR”; if the AI locks authorisation, the focused campaign is this pairwise check |
 | LLMs help as sparring partners, not as unsupervised attackers; high-level plan is not a low-level loop; refuse social-engineering dual-use [2] | T3-HITL is the main scored mode; swarm and overnight are measured, not assumed better; no phishing content; ATT&CK only as labels after confirmation |
-| Naive chat loses the global picture; HITL plus task tree plus truncated tool output raises sub-task completion; unattended pentest remains difficult; GPT-4 HTB spend was about USD 131 [1] | Facts file / small task tree; never paste full ZAP dumps; human executes hypothesised *classes* of check; progressive evidence rows; €50 ceiling |
+| Naive chat loses the global picture; HITL plus task tree plus truncated tool output raises sub-task completion; unattended pentest remains difficult; GPT-4 HTB spend was about USD 131 [1] | Facts file / small task tree; never paste full ZAP dumps; human executes hypothesised *classes* of check; progressive evidence rows; report model and local versus cloud |
 | Extra agents, large Kali menus, mismatched RAG often do not help; flag hallucination is structural [3] | One agent, three modes; small HTTP menu; no HackTricks; success = saved request/response |
 
 The project is small because the literature already identifies which knobs matter, not because the scientific framing was skipped.
@@ -339,15 +334,15 @@ Procedures (the concrete `curl` lines) remain in the private evidence log. The p
 
 T1 and T2 are off-the-shelf scanners. T3 is a new AutoPT agent written by the student. Swarm and overnight are modes of T3, not extra products.
 
-| ID | Tool / mode | Role in Peng’s terms | Knowledge level | Tokens |
+| ID | Tool / mode | Role in Peng’s terms | Knowledge level | LLM |
 | --- | --- | --- | --- | --- |
 | T1 | OWASP ZAP (automated / “quick” scan, localhost only) | Traditional security-tool DAST; no LLM. Baseline for non-LLM scanning. | Black-box | None |
 | T2 | Nuclei (ProjectDiscovery; HTTP templates against the laboratory URL only) | Template-based black-box scanner; still no source. | Black-box | None |
-| T3-HITL | New AutoPT agent, single-agent human-in-the-loop, with Ollama (`llama3.2:3b` or `qwen2.5:7b`) and/or one paid chat API (preferred: Mistral Small) | Student-built assistant: facts file plus small HTTP menu; (A) define main weakness; (B) test that class per application. Fallback if the build slips: a 15-prompt notebook with the same research questions. | Black-box | Capped (Section 9.0); paid spend ≤ €50 |
-| T3-swarm | Same agent, two or three roles (planner / executor / reviewer) | Multi-agent swarm; roles share the facts file; no extra Kali inventory. One representative application. | Black-box | Shares the €50 / call caps |
-| T3-night | Same agent, overnight unattended loop | Wall-clock and euro kill switch. One representative application, one night. | Black-box | Shares the €50 cap (Section 9.0) |
+| T3-HITL | New AutoPT agent, single-agent human-in-the-loop | Student-built assistant: facts file plus small HTTP menu; (A) define main weakness; (B) test that class per application. Fallback if the build slips: a 15-prompt notebook with the same research questions. | Black-box | Local and/or cloud (Section 9.0) |
+| T3-swarm | Same agent, two or three roles (planner / executor / reviewer) | Multi-agent swarm; roles share the facts file; no extra Kali inventory. One representative application. | Black-box | Same T3 backbones |
+| T3-night | Same agent, overnight unattended loop | Wall-clock kill switch. One representative application, one night. | Black-box | Same T3 backbones |
 
-**Definition of the new AutoPT agent.** A Python (or similar) orchestrator owned by the student: prompt templates, facts-file I/O, a small tool wrapper (`curl` / saved HTTP), LLM calls (Ollama on localhost and/or one HTTP chat API). Deng et al. (PentestGPT task tree) is the design reference, not a fourth scored tool. There is no new model training, no 115-tool router, and no payloads in the public repository. Switching from Ollama to a paid API does not add a fourth product: it is the same T3 codebase with a different backbone. The report names the model identifier on every call.
+**Definition of the new AutoPT agent.** A Python (or similar) orchestrator owned by the student: prompt templates, facts-file I/O, a small tool wrapper (`curl` / saved HTTP), LLM calls to a **local** runtime (for example Ollama) and/or a **cloud** chat API. Deng et al. (PentestGPT task tree) is the design reference, not a fourth scored tool. There is no new model training, no 115-tool router, and no payloads in the public repository. Changing backbone (local ↔ cloud, or one vendor to another) does not add a fourth product: it is the same T3 codebase. The report names the model identifier and local versus cloud on every call.
 
 **Why ZAP, Nuclei, and this agent, and not Strix, CAI, or Semgrep as extra products.** Peng §5.4: atomic HTTP, not a Kali inventory. Peng §2.1: Semgrep is grey/white-box SAST — named in Section 8.1, not executed. Swarm and overnight are in scope as T3 modes so that Peng §5.1 can be checked on this corpus. Other products may be mentioned only in Section 8.1.
 
@@ -357,13 +352,13 @@ T1 and T2 are off-the-shelf scanners. T3 is a new AutoPT agent written by the st
 
 ### 8.1 In scope
 
-- Multiple Dockerized fitness applications on the laptop (corpus in Section 5)
+- Multiple Dockerized fitness applications on localhost (corpus in Section 5)
 - Synthetic accounts only
 - Black-box campaign only
 - ZAP, Nuclei, and a new AutoPT agent
 - Multi-agent swarm (T3 mode, one application)
 - Overnight loops (T3 mode, one application, localhost kill switch)
-- Optional paid chat API for T3 (preferred: Mistral Small), same protocol, ≤ €50 semester-wide including overnight
+- Local and/or cloud LLMs as T3 backbones (same protocol; recorded in the call log)
 - AI definition of the main weakness class (one locked OWASP API identifier)
 - Authentication, authorisation, secrets, session, export, and upload as seen from HTTP
 - Human confirmation (read responses; no exploit development)
@@ -377,8 +372,8 @@ T1 and T2 are off-the-shelf scanners. T3 is a new AutoPT agent written by the st
 - White-box empirical work (full audit, SAST as main paradigm, formal verification)
 - Grey-box empirical work (source in prompts, OpenAPI as tester input, Semgrep campaign, insider API map as a scored condition)
 - Testing only one application (unless four cannot be started — then document the failure; do not silently shrink the design)
-- Uncapped paid tokens, cloud GPUs, cloud agent VMs, or commercial AutoPT SaaS (CAI/Strix as scored products)
-- Paid APIs other than one cheap chat backbone under the €50 cap (no GPT-4-class bill; Cursor Cloud Agents are not T3)
+- Commercial AutoPT SaaS (CAI, Strix, and similar) as scored products
+- Cursor Cloud Agents as T3
 - Testing Workout.cool production, Endurain production, or any third-party live system
 - Full mobile reverse engineering, Frida, jailbreak, Active Directory / Caldera
 - Real wearables or real health records
@@ -399,30 +394,19 @@ The catalog [`AI-Pentesting-Tools-Research-Catalog.md`](AI-Pentesting-Tools-Rese
 
 ## 9. Method
 
-### 9.0 Laptop and token rules
+### 9.0 LLM backbones (local and cloud)
 
-| Resource | Minimum | Comfortable |
-| --- | --- | --- |
-| RAM | 8 GB (3B model; one Docker stack at a time; ZAP *or* Ollama, not both) | 16 GB |
-| Disk | 30 GB free (several images) | 50 GB |
-| GPU | Not required | Optional |
+T3 may call **local** models (for example via Ollama or another on-machine runtime) and **cloud** chat APIs. Both are in scope. They are backbones of the same agent, not two scored products.
 
-| Rule | Limit |
+| Rule | Practice |
 | --- | --- |
-| Default LLM | Ollama localhost, €0 (`llama3.2:3b` or `qwen2.5:7b`; open-weight Mistral via Ollama also counts as local) |
-| Optional paid backbone | One chat API: preferred Mistral Small ([mistral.ai/pricing](https://mistral.ai/pricing/)). Alternatives in the same cheap band (for example Mistral Large, Ministral) only if they still fit the euro cap. Medium-class or GPT-4-class models are not the default paid choice. |
-| Euro cap | ≤ €50 all-in for the semester (API tokens plus any Mistral- or OpenAI-style subscription used for T3). Set a dashboard spend limit (for example €20 then €45) so overnight cannot silently overshoot. |
-| Call cap | ≤ 80 LLM calls for HITL, definition, and retest; overnight and swarm share the euro cap, not an extra uncapped pool |
-| Split | ≤ 8 define-main-weakness + ≤ 8 per running application focused HITL + ≤ 20 retest on the one or two fixed forks + remainder buffer |
-| Prompt size | ≤ 2 000 tokens; never paste a full ZAP or Nuclei dump (this also keeps the paid bill small) |
-| If Ollama is unusable | Switch T3 to the paid backbone for the same jobs; log the switch date. Do not run local and paid as two scored conditions. |
-| Autonomous loops | Overnight allowed with wall-clock and euro kill switch (stop at €50 or the dashboard limit, whichever is reached first) |
+| Allowed backbones | Local LLM, cloud LLM, or both during the semester |
+| Recording | Every call: date, tool mode, application identifier, job (define-class / test / retest / swarm / overnight), model identifier, local versus cloud |
+| Prompt size | Truncated evidence only; never paste a full ZAP or Nuclei dump (Deng et al.) |
+| Switching | Changing backbone does not open a new experimental condition; log the date and model |
+| Overnight | Allowed with a wall-clock kill switch on localhost |
 
-Worked example: five running applications → 8 + 40 + 20 = 68 HITL-style calls, with buffer for swarm, overnight, and retest. If the cap would break, reduce HITL depth, not the number of screened applications.
-
-At Mistral Small list prices (approximately USD 0.15 / 0.60 per million input/output tokens, 2026), 80 calls of at most 2 000 in and about 800 out cost well under €1. Even a noisier overnight run (hundreds of calls, growing facts file) stays in the single-digit to low tens of euros if prompts stay truncated. Deng et al.’s approximately USD 131 GPT-4 spend is out of band; this laboratory never uses that class of bill. **€50 is a hard ceiling, not a target.**
-
-**Token log (required appendix):** date, tool, application identifier, job (define-class / test / retest / swarm / overnight), model, local versus API, call number, approximate tokens, running euro spend.
+**Call log (required appendix):** as in the recording row above. Cost, if a cloud API is used, may be noted but is not a scientific limit of this proposal.
 
 ### 9.1 Black-box protocol (Peng §2.1)
 
@@ -438,15 +422,15 @@ At Mistral Small list prices (approximately USD 0.15 / 0.60 per million input/ou
 - Inputs allowed: public README or feature bullets; truncated class names from all screens; observed route patterns from registration (for example `workouts/{id}`).
 - Inputs forbidden: source, OpenAPI files, exploit recipes, the student’s preferred class.
 - Output required: exactly one OWASP API Top 10 identifier, a one-sentence defender meaning, and which applications the model claims show it.
-- Human action: lock that class, or write why the session is discarded (empty or garbage output) and rerun once inside the eight-call budget. The class is not selected by shopping among outputs.
+- Human action: lock that class, or write why the session is discarded (empty or garbage output) and rerun once. The class is not selected by shopping among outputs.
 
 **Focused test (every running application)**
 
 - The agent may know the locked class name (that is the hypothesis under test). It still must not receive source or payloads (Happe/Deng: the human is the executor).
 - The student executes only hypothesised classes of check and saves HTTP traces. If the locked class is access control, the default check is Sun’s pairwise object URL (user B requests user A’s `…/{id}`).
-- Stop at the per-application call budget. Record “budget exhausted.”
+- Stop when the focused checks for the locked class are done, or record why the session ended without a confirmed HTTP row.
 
-Fairness: the same two-user story, the same junior day-one tool setup, sequential stacks on a small laptop.
+Fairness: the same two-user story, the same junior day-one tool setup, sequential stacks if the host cannot run them together.
 
 ### 9.2 Ground truth
 
@@ -472,7 +456,7 @@ New “main” classes are not added after the definition session. Secondary fin
 | False-success count | LLM claims “done / critical / this is the main bug” with no evidence (Peng §5.6.3) |
 | Definition quality | Locked class matches the most frequent confirmed class (yes/no) |
 | Time | Hours per tool × application (screen versus focused) |
-| LLM calls / euros | Must stay inside Section 9.0 (calls and ≤ €50 if paid) |
+| LLM calls | Count and backbone (local versus cloud), logged (Section 9.0) |
 | Retest delta | Locked-class findings still open on the one or two fixed forks |
 | Coverage by class | Locked class versus others (OWASP API) |
 
@@ -503,11 +487,11 @@ Each step has a purpose and a completion criterion. Stretch items may be skipped
 | Step | Activity | Purpose |
 | --- | --- | --- |
 | 0.1 | Read Peng et al. (taxonomy and §5 findings) plus Deng, Happe, Sun, and Papageorgiou (map in Section 6.4) | Shared vocabulary; each paper licenses one design choice, not a sixth tool |
-| 0.2 | Write a two-page protocol: three tools, black-box only, multi-application corpus, AI main-class rule, token cap, ethics | Supervisory sign-off before any scan |
-| 0.3 | Confirm Ollama replies on the laptop; optionally create a Mistral (or equivalent) API key with a €50 spend limit | Prove the free-token path; paid path ready but capped |
+| 0.2 | Write a two-page protocol: three tools, black-box only, multi-application corpus, AI main-class rule, ethics | Supervisory sign-off before any scan |
+| 0.3 | Confirm a local LLM and/or a cloud LLM responds through T3 | Prove at least one backbone before Phase 2 |
 
 **Phase objective.** The project is a Peng-taxonomy multi-application case study, not a one-target demonstration.  
-**Completion.** Signed ethics page, protocol, `ollama run` screenshot, and API spend-limit screenshot if the paid path will be used.
+**Completion.** Signed ethics page, protocol, and a screenshot of a successful T3 call (local and/or cloud).
 
 ### Phase 1 — Bring up the corpus (weeks 2–4)
 
@@ -539,7 +523,7 @@ Operational record: [`Phase-1-Lab-Log.md`](Phase-1-Lab-Log.md).
 
 | Step | Activity | Purpose |
 | --- | --- | --- |
-| 3.1 | One HITL session (≤ 8 calls): truncated screen classes, README bullets, observed routes | Let T3 name the family-level main class |
+| 3.1 | One HITL session: truncated screen classes, README bullets, observed routes | Let T3 name the family-level main class |
 | 3.2 | Require output = one OWASP API identifier, one sentence, claimed applications | Prevent an undifferentiated list of every class |
 | 3.3 | Lock the class (or one discard-and-rerun) | RQ1 hypothesis frozen |
 
@@ -550,12 +534,12 @@ Operational record: [`Phase-1-Lab-Log.md`](Phase-1-Lab-Log.md).
 
 | Step | Activity | Purpose |
 | --- | --- | --- |
-| 4.1 | HITL agent per application (≤ 8 calls), class name allowed, no source | Test the locked hypothesis on each product |
+| 4.1 | HITL agent per application, class name allowed, no source | Test the locked hypothesis on each product |
 | 4.2 | Student executes only hypothesised classes of check; save HTTP traces | Separate model speech from evidence |
 | 4.3 | Update facts file from confirmed HTTP only | Bind feedback to memory (Peng §3.2.4 / §6) |
 
 **Phase objective.** Measure whether the AI-named class is real on the corpus.  
-**Completion.** Per-application T3 table complete; call log inside Section 9.0.
+**Completion.** Per-application T3 table complete; call log as in Section 9.0.
 
 ### Phase 5 — Human review and labels (week 8)
 
@@ -586,7 +570,7 @@ Operational record: [`Phase-1-Lab-Log.md`](Phase-1-Lab-Log.md).
 | --- | --- | --- |
 | 7.1 | ZAP again on the patched fork(s) | RQ3, traditional scanner |
 | 7.2 | Nuclei again | RQ3, template scanner |
-| 7.3 | HITL retest ≤ 20 calls total | RQ3, AI, same blindness as Phase 4 |
+| 7.3 | HITL retest | RQ3, AI, same blindness as Phase 4 |
 | 7.4 | Retest-delta table and checklist for the other applications | What disappeared versus what the family still needs |
 
 **Phase objective.** Show upgrades of the main class, not only a list of defects.  
@@ -607,7 +591,7 @@ Operational record: [`Phase-1-Lab-Log.md`](Phase-1-Lab-Log.md).
 ### Strategy (overview)
 
 ```
-Frame (Peng taxonomy, ethics, Ollama ± capped paid API)
+Frame (Peng taxonomy, ethics, local and/or cloud LLM)
         ↓
 Stand up the five fitness applications (pass: at least four)
         ↓
@@ -637,7 +621,7 @@ The project succeeds if the report can state, with tables:
 - whether ZAP and Nuclei surfaced the same class, and whether the agent added authorisation-style rows;
 - counts of confirmed findings versus hallucinated or evidence-free claims (RQ2), including whether the definition session itself was evidence-free;
 - after fixes on one or two forks, locked-class recall moved from *A*% to *B*% there;
-- token total stayed under the call cap; paid spend (if any) stayed ≤ €50.
+- token and backbone log complete (local versus cloud, model identifiers);
 
 A mixed result is acceptable. Example: the agent named broken object-level authorisation as the main class; scanners mostly reported configuration noise; HTTP confirmed the class on three of five applications; half of the AI claims lacked evidence.
 
@@ -664,11 +648,11 @@ A mixed result is acceptable. Example: the agent named broken object-level autho
 2. Background: fitness-application threats (Papageorgiou et al.) + access-control evidence shape (Sun et al.) + Peng taxonomy (knowledge levels, six dimensions, findings adopted; why empirical work is black-box only)  
 3. Related work (five papers with the Section 6.4 map + tools not run)  
 4. Targets: the five-application corpus, what started, what dropped ([`Phase-1-Lab-Log.md`](Phase-1-Lab-Log.md))  
-5. Method: three tools, findings-to-techniques map (Sections 6.5–6.6), black-box protocol, AI main-class definition, metrics, ethics, token cap  
+5. Method: three tools, findings-to-techniques map (Sections 6.5–6.6), black-box protocol, AI main-class definition, metrics, ethics, LLM backbones  
 6. Work-plan recap (Phases 0–8, one page)  
 7. Results: RQ1–RQ3 tables (class lock, hit rate, hallucinations, retest)  
 8. Discussion: what to upgrade first on this product family; what Peng et al. predicted that was observed  
-9. Limitations (laptop, weak local LLM or cheap API, no grey-box, no white-box, fixes on one or two applications only)  
+9. Limitations (chosen LLM backbone, no grey-box, no white-box, fixes on one or two applications only)  
 10. Conclusion  
 
 Appendices: versions, prompts, finding identifiers, token log, Nuclei template identifiers used, main-weakness card.
@@ -690,13 +674,13 @@ Appendices: versions, prompts, finding identifiers, token log, Nuclei template i
 | 14 | Buffer, demonstration | 20 |
 | **Total** | | **~255 hours** |
 
-Controls that keep the project inside one semester: token cap and €50 paid ceiling; screen all applications / fix few; one locked class. A sixth application or a fourth scored product is not added.
+Controls that keep the project inside one semester: screen all applications / fix few; one locked class. A sixth application or a fourth scored product is not added.
 
 ---
 
 ## 15. Required skills
 
-HTTP APIs, Docker, reading OWASP API Top 10, and honest scientific writing. OSCP, reverse engineering, and machine-learning research are not required. Supervision in software security or software engineering is sufficient. A 16 GB laptop is preferred; 8 GB works if stacks run sequentially (one at a time).
+HTTP APIs, Docker, reading OWASP API Top 10, and honest scientific writing. OSCP, reverse engineering, and machine-learning research are not required. Supervision in software security or software engineering is sufficient.
 
 ---
 
@@ -704,8 +688,7 @@ HTTP APIs, Docker, reading OWASP API Top 10, and honest scientific writing. OSCP
 
 - Only self-hosted instances; never production fitness SaaS.
 - Synthetic names and health values only.
-- Prefer local Ollama so HTTP traces never leave the laptop.
-- If a paid API is used: send only truncated synthetic laboratory traffic (no real names, no real health values, no full dumps); an EU-hosted Mistral endpoint is the preferred vendor; record in the ethics appendix that prompts left the machine.
+- Local LLMs keep traces on the machine. Cloud LLMs are allowed; send only truncated synthetic laboratory traffic (no real names, no real health values, no full dumps) and record in the ethics appendix that prompts left the machine.
 - No exploit recipes or payloads in the public report — classes and fixes only.
 - The AI main-class prompt asks for an OWASP identifier, not a working attack.
 - Private logs; public aggregated tables.
@@ -722,15 +705,15 @@ HTTP APIs, Docker, reading OWASP API Top 10, and honest scientific writing. OSCP
 | An application will not start | Dropout log; keep at least four; optional LibreFit substitute |
 | Endurain too heavy | Skip with RAM note; corpus remains valid |
 | Agent implementation fails | 15-prompt notebook; still T3 (define and test) |
-| 8 GB RAM | 3B model; never two stacks plus ZAP plus Ollama together. Paid API is the RAM-friendly fallback (no local weights). |
-| Paid API would exceed €50 | Stop T3 immediately; finish with Ollama or the 15-prompt notebook; report “budget exhausted” |
+| Host cannot run several stacks at once | Run one Docker stack at a time |
+| Local LLM unavailable or too weak | Switch T3 to a cloud LLM; log the switch; 15-prompt notebook remains a fallback |
+| AI names an empty or garbage class | One rerun; then lock or report “definition failed” (valid RQ2) |
 | Nuclei template noise | Restrict to HTTP / exposed-panels classes; state the filter |
-| AI names an empty or garbage class | One rerun inside the eight-call budget; then lock or report “definition failed” (valid RQ2) |
 | Almost no findings | Valid result; checklist still from claimed class and literature |
 | Many hallucinations | Answers RQ2; count them |
 | Temptation to pick a favourite class by hand | The locked class must come from the definition session |
 | Temptation to add Semgrep or source-in-prompt | Grey-box is out of the empirical scope |
-| Temptation to add a fourth agent product | Breaks Peng’s “more tools ≠ better” finding and the token cap |
+| Temptation to add a fourth agent product | Breaks Peng’s “more tools ≠ better” finding |
 
 The research questions remain unchanged under these mitigations.
 
@@ -741,7 +724,7 @@ The research questions remain unchanged under these mitigations.
 The student requests supervisory approval of:
 
 1. the in-scope and out-of-scope lists (Section 8);
-2. laptop and token rules (Ollama default; optional paid API ≤ €50);
+2. local and/or cloud LLMs as T3 backbones (Section 9.0);
 3. three instruments and black-box-only empirical work (white-box and grey-box out of the empirical scope);
 4. the five applications in Section 5 as the corpus (pass: at least four running);
 5. AI-defined main weakness (one locked OWASP API class);
@@ -750,7 +733,7 @@ The student requests supervisory approval of:
 8. ethics (synthetic data, no production, no exploit publication);
 9. Peng et al. as the taxonomy source, not as an experiment to replicate at scale; Deng, Happe, Sun, and Papageorgiou as design evidence (Section 6.4), not extra laboratories.
 
-**Week-2 kick-off expected by the supervisor:** first two applications up with image pins; Ollama proof; two-page protocol (plus API spend-limit if using paid tokens).
+**Week-2 kick-off expected by the supervisor:** first two applications up with image pins; T3 backbone proof (local and/or cloud); two-page protocol.
 
 ---
 
@@ -786,26 +769,8 @@ The report is not expanded into a second survey of Aikido, Thorfinn, or Caldera.
 
 1. Confirm the one-semester format with the supervisor (this document).
 2. Bring up Workout.cool first, then FitTrackee, openGym, FitnessTrack, Endurain; log dropouts; do not stop at one application.
-3. Install Ollama; then ZAP; then Nuclei; then build the new AutoPT agent (HITL first). Optional: one paid API key with a €50 dashboard limit (Mistral Small preferred).
+3. Install ZAP and Nuclei; confirm a local and/or cloud LLM; build the new AutoPT agent (HITL first).
 4. Screen all running applications before the AI definition session.
 5. Lock one main weakness class from the AI; do not override it with a favourite.
-6. Keep the facts file and token log from the first call.
+6. Keep the facts file and call log from the first LLM call.
 7. After confirmed findings, fill OWASP/ATT&CK. Do not install Caldera. Do not add a grey-box or white-box campaign.
-
----
-
-## Appendix B. Signature page
-
-By signing, the parties agree that this document describes the approved scientific scope of the semester project. Operational laboratory notes may be updated without changing the research questions, corpus definition, empirical knowledge level, or token ceiling, unless the supervisor agrees in writing.
-
-| | Student | Supervisor |
-| --- | --- | --- |
-| Name | Achraf | |
-| Date | 20 September 2026 | |
-| Signature | | |
-
-| | Co-supervisor (if any) |
-| --- | --- |
-| Name | |
-| Date | |
-| Signature | |
