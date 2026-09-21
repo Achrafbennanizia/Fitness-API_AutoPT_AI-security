@@ -551,23 +551,7 @@ What keeps this inside one semester: scan every app but only fix a couple, and s
 
 ---
 
-## 18. What I'm asking the supervisor to approve
-
-1. the in-scope and out-of-scope lists in Section 8
-2. local and/or cloud AI models as valid ways to run the tester (Section 9.0)
-3. three tools, black-box testing only, no grey-box or white-box work
-4. the five apps in Section 5, with four running counted as a pass
-5. the AI naming the main weakness, rather than me choosing it
-6. fixes applied to only one or two app copies
-7. OWASP and ATT&CK used purely as labels, not as a full attack-emulation lab
-8. the ethics approach: synthetic data, no production systems, no exploit publication
-9. Peng et al. as the source of vocabulary rather than something to replicate at full scale, with the other four papers as design evidence rather than extra experiments
-
-Week-2 kickoff deliverable: the first two apps running with version pins, proof that the AI tester can call a local and/or cloud model, and the two-page protocol.
-
----
-
-## 17. References
+## 16. References
 
 [1] G. Deng, Y. Liu, V. Mayoral-Vilches, P. Liu, Y. Li, Y. Xu, T. Zhang, Y. Liu, M. Pinzger, and S. Rass, "PentestGPT: Evaluating and harnessing large language models for automated penetration testing," in *Proc. 33rd USENIX Security Symposium*, 2024, pp. 847-864.
 

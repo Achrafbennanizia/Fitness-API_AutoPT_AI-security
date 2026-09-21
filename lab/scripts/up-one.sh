@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
-# Sequential Phase 1 bring-up. Requires: colima start, DOCKER_HOST set.
+# Bring up one named stack. Prefers Docker Desktop, then Colima.
 set -euo pipefail
-export DOCKER_HOST="${DOCKER_HOST:-unix://${HOME}/.colima/default/docker.sock}"
+if [[ -z "${DOCKER_HOST:-}" ]]; then
+  if [[ -S "${HOME}/.docker/run/docker.sock" ]]; then
+    export DOCKER_HOST="unix://${HOME}/.docker/run/docker.sock"
+  else
+    export DOCKER_HOST="unix://${HOME}/.colima/default/docker.sock"
+  fi
+fi
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 COMPOSE="docker-compose"
 
