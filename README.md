@@ -10,6 +10,7 @@ rpk/
 ├── docs/                              reading and planning
 │   ├── README.md
 │   ├── Master-Semester-Project-Proposal.md
+│   ├── Master-Semester-Project-Proposal-v1.md  first version (Wger, 7 Sep 2026)
 │   ├── Phase-1-Lab-Log.md             Phase 1 corpus outcome
 │   ├── Papers-Tools-Extract.md        tools named in the five papers
 │   ├── AI-Pentesting-Tools-Research-Catalog.md

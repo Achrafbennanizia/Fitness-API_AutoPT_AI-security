@@ -1,350 +1,271 @@
-# Master’s Semester Project Proposal
+# Which Weakness Shows Up Across Self-Hosted Fitness Apps?
 
-| | |
+*A black-box comparison using ZAP, Nuclei, and a small AI tester (plain-language version)*
+
+Master's semester project proposal, Achraf, 20 September 2026 (rewritten for clarity, v1.1)
+
+| Item | Detail |
 | --- | --- |
-| **Programme** | Master’s degree — semester project |
-| **Document type** | Project proposal (for supervisory approval) |
-| **Academic year** | 2026–2027 |
-| **Student** | Achraf |
-| **Date** | 20 September 2026 |
-| **Version** | 1.0 |
-| **Status** | Submitted for approval |
-| **Indicative load** | 15 ECTS · 240–280 hours · 12–14 working weeks |
+| Programme | Master's degree, semester project |
+| Document type | Project proposal, for supervisor approval |
+| Academic year | 2026-2027 |
+| Load | 15 ECTS, about 250 hours, 12-14 working weeks |
 
 ---
 
-**Title**
+## What this project is, in plain terms
 
-Black-Box Evaluation of Three Security Testing Tools Across Open-Source Fitness Applications: An AI-Defined Main Weakness, Using the Peng et al. AutoPT Taxonomy
+I'm testing five self-hosted, open-source fitness apps (Workout.cool, FitTrackee, openGym, FitnessTrack, and Endurain, with at least four needing to actually run) using three tools: OWASP ZAP, Nuclei, and a small AI-assisted tester I build myself. I only test from the outside, the way a stranger with no source code and no inside knowledge would. This is the "black-box" approach described by Peng et al. (2026).
 
-**Field.** Application security; AI-assisted security testing; privacy of health-adjacent data.
+Health apps have a poor track record with sensitive data (Papageorgiou et al., 2018), which is why I'm studying five apps as a group instead of picking on one. Access-control bugs, where one user can see another user's data, are proven with a simple test: create two accounts and check whether account A can read account B's information (Sun et al., 2011). Giving an AI assistant a person to work with, plus short notes instead of one long chat, works better than letting it run unsupervised (Deng et al., 2024). Happe and Cito (2023) treated the AI as a sparring partner, not an unsupervised attacker.
 
-**Empirical knowledge level.** Black-box only. White-box and grey-box methods are defined in the background chapter and are **not** executed.
+After running ZAP and Nuclei on all five apps, my AI tester (using a local model, a cloud model, or both) picks one main weakness for the whole group, described using an OWASP API Security Top 10 category. I then check whether that weakness actually holds up, first with me driving one AI conversation by hand, then with a few AI "roles" working together, then with one unsupervised overnight run on a single app. A finding only counts if I saved the actual request and response, which is how I catch the tool claiming success when it found nothing. I then fix the problem on one or two apps, retest, and write a checklist any team building a fitness app could use. Confirmed issues get labeled with OWASP API Top 10 and MITRE ATT&CK codes. The final report runs 20-30 pages.
 
-**Test corpus.** Five self-hosted open-source fitness and health applications (Section 5). A pass requires at least four instances running on authorised localhost.
-
-**Instruments.** OWASP ZAP; ProjectDiscovery Nuclei; a student-built AutoPT agent, evaluated in three modes: human-in-the-loop (HITL), multi-agent swarm, and one overnight loop.
-
-**Taxonomy.** Peng, Li, You, et al. (2026), *Hackers or Hallucinators?*, arXiv:2604.05719.
-
-**LLM backbones.** Local models and cloud LLMs are both allowed. They are backbones of the same agent (T3), not extra scored products. The report names the model and whether each call was local or cloud.
-
-**Nature of work.** Applied research and a small, defensive laboratory study on authorised localhost instances. No production systems, no exploit publication.
+*Keywords: black-box testing; API security; automated penetration testing; large language models; OWASP API Top 10; mobile health apps; human in the loop; OWASP ZAP; Nuclei.*
 
 ---
 
-## Abstract
+## 1. Why this project
 
-This semester project applies the architectural taxonomy of Peng et al. (2026) to a corpus of five self-hosted open-source fitness applications (Workout.cool, FitTrackee, openGym, FitnessTrack, Endurain; at least four must run). The product family is motivated by Papageorgiou et al. (2018), who documented an alarming state of practice in freeware mHealth applications. Two-account evidence for access-control failures follows Sun et al. (2011). Human-in-the-loop method and truncated memory follow Deng et al. (2024). Sparring-partner use of language models and caution about unsupervised loops follow Happe and Cito (2023).
+Fitness apps store things people want kept private: workouts, weight, heart rate, sleep, GPS routes from runs, and sometimes tokens from connected wearables. Most are built the same way, a website or phone app talking to an API, with several accounts that should never see each other's data.
 
-In line with Peng et al., white-box and grey-box work are outside the empirical scope. After a black-box screen with OWASP ZAP and Nuclei, a new AutoPT agent — using a **local LLM, a cloud LLM, or both** as backbones — names the main weakness class of the family as a single OWASP API Security Top 10 identifier. That class is then tested under the same black-box rules on every running application, including a HITL campaign, a multi-agent swarm, and one overnight loop on a representative target. Findings are accepted only with saved HTTP evidence, so that hallucinations and false-success claims can be counted. A short hardening pass and black-box retest are performed on one or two representative forks; the resulting checklist addresses the class across the family. Commercial AutoPT products are out of scope as scored tools. Confirmed issues are labelled with OWASP API Top 10 and MITRE ATT&CK. The intended outcome is a measured multi-application case study: five applications, an AI-named main weakness, black-box protocol only, and a 20–30 page report.
+A 2018 study (Papageorgiou et al.) looked at popular free health apps and called the state of the industry "alarming": weak logins, sensitive data handled carelessly, and privacy policies that didn't match what the apps actually did. That's why this project studies five apps rather than one. A single broken app is a story. Five apps breaking the same way is a pattern, and a pattern is what a checklist can actually fix.
 
-**Keywords:** black-box testing; API security; automated penetration testing (AutoPT); large language models; OWASP API Top 10; mHealth; human-in-the-loop; OWASP ZAP; Nuclei.
+The typical bug here isn't a flashy exploit. Sun et al. (2011) showed that access-control bugs are proven one way: create two accounts and check whether account B can still reach account A's data through a hidden link. I won't run their code-scanning tool, since that would mean reading the source code and would break the black-box rule. I'll do the two-account check by hand instead.
 
----
+AI tools can already suggest what to test, but a suggestion isn't proof. Happe and Cito (2023) used a language model as a sparring partner on an authorized lab machine: it proposed a plan, and a human ran the actual commands from there. They also found it invented commands, got unstable over long sessions, and needed a person watching to keep it from crossing lines (it refused to draft phishing content, for instance, and they kept that refusal). Deng et al. (2024) showed that a plain chatbot loses track of a long testing session: its context fills up, it fixates on the last message, and it invents command-line flags that don't exist. Breaking the work into small steps, keeping short notes instead of a long transcript, and having a person actually run each command fixed most of that and clearly raised how many sub-tasks got finished, compared with an unstructured chatbot. Their own live test on Hack The Box machines cost about $131 in GPT-4 usage, which matters because it shows that "automated" AI testing still has a real cost.
 
-## Document control
+Peng et al. (2026) pointed out that most papers claiming "AI does penetration testing" don't even agree on shared vocabulary, and ran a genuinely massive comparison, thirteen frameworks and over ten billion tokens, that's far beyond what one semester could repeat. What I'm borrowing from them is their vocabulary, not their scale. The actual question I'm asking:
 
-| Version | Date | Author | Change |
-| --- | --- | --- | --- |
-| 1.0 | 20 September 2026 | Achraf | Proposal submitted for supervisory approval |
+> Across several self-hosted fitness apps, tested only from the outside, what's the one weakness a small AI tester keeps naming? Do a standard scanner, a template scanner, and three different ways of running the AI tester (a person driving it, a few AI roles cooperating, one unsupervised overnight run) actually confirm that weakness? And how much of what the AI reports is real evidence versus confident-sounding guesswork?
 
-Related laboratory notes (not part of this approval text): Phase 1 corpus outcome, paper reading notes, and tool extract under `docs/`.
+Peng et al. found that adding more AI "roles," bigger tool menus, and mismatched reference material often doesn't help, and that AI testers frequently claim results they never actually verified. I'm checking those claims myself on fitness apps rather than assuming they hold. Three things get tested: OWASP ZAP, a standard scanner; Nuclei, HTTP-based rule matching and nothing fancier; and a small AI tester I build myself, run three different ways (person-driven, cooperating AI roles, unsupervised overnight).
 
----
+I'm not deciding in advance what the main bug will be. The AI tester picks one OWASP category on its own, and I then check the real apps to see whether that category actually holds up. Once I know which apps show the problem, I fix it on one or two of them, retest, label the confirmed issues with OWASP and MITRE ATT&CK codes, and write a checklist covering the whole app family.
 
-## Contents
-
-1. [Motivation](#1-motivation)  
-2. [Problem statement](#2-problem-statement)  
-3. [Research questions](#3-research-questions)  
-4. [Objectives](#4-objectives)  
-5. [Targets: corpus of open-source fitness applications](#5-targets-corpus-of-open-source-fitness-applications)  
-6. [Taxonomy and related findings](#6-taxonomy-and-related-findings)  
-7. [Tools](#7-tools)  
-8. [Scope](#8-scope)  
-9. [Method](#9-method)  
-10. [Work plan](#10-work-plan)  
-11. [Expected results](#11-expected-results)  
-12. [Deliverables](#12-deliverables)  
-13. [Report outline](#13-report-outline)  
-14. [Semester timetable](#14-semester-timetable)  
-15. [Required skills](#15-required-skills)  
-16. [Ethics, privacy, and legal constraints](#16-ethics-privacy-and-legal-constraints)  
-17. [Risks and mitigations](#17-risks-and-mitigations)  
-18. [Request for approval](#18-request-for-approval)  
-19. [References](#19-references)  
-
-Appendix A. [Kick-off checklist](#appendix-a-kick-off-checklist)
+All of this has to fit inside one semester, so I'm not repeating Peng et al.'s enormous comparison. Local and cloud AI models both count as valid ways to run the same tester (see section 9.0).
 
 ---
 
-## 1. Motivation
+## 2. What's missing right now
 
-Fitness and health applications store sensitive data: workouts, weight, heart rate, sleep, GPS traces of runs, and sometimes wearable tokens. They are typically a web or mobile client plus a REST API, with several accounts that must not see one another’s records. Papageorgiou et al. [5] measured popular freeware mHealth and wellbeing applications and reported an “alarming state of practice”: weak authentication, mishandling of sensitive data, and policies that did not match observed behaviour. That result motivates (i) a **fitness and health product family**, (ii) a **hardening checklist** as a defender deliverable, and (iii) the exclusion of production SaaS and real health records. A single application is anecdotal. Several self-hosted applications show whether a weakness is a family-level pattern.
+Small teams building fitness apps are missing two answers: which weakness actually shows up across this kind of app, and how much a small, open AI tester actually helps find and confirm it, compared with ordinary scanners, when nobody hands it the source code, an API specification, or inside knowledge.
 
-The typical family defect is not a capture-the-flag flag. Sun et al. [4] showed that access-control failures are application-specific: hiding a link is not an enforcement check. The appropriate unit of evidence is **two roles (or two users) and an object URL**. Their static PHP analyser is not executed here (white-box and grey-box are out of empirical scope). The finding that is reused is: a confirmed row is a weaker session that still receives another user’s object. That two-account HTTP protocol is specified in Sections 5.2 and 9.1.
+Each of the five papers I'm drawing on answers part of this, not the whole thing:
 
-Language-model testers are already plausible, but they are not a substitute for evidence. Happe and Cito [2] showed that GPT-class models can act as sparring partners (high-level plans; a low-level command loop on an authorised laboratory virtual machine), while documenting instability, invented commands, and dual-use risk. They refused phishing content and kept a human in the loop. Deng et al. [1] measured that off-the-shelf chat loses global context (context rot, last-turn bias, fabricated tool flags) and that a HITL split—task tree, truncated dumps, human executor—raises sub-task completion relative to naive GPT-3.5. Their live Hack The Box run still cost approximately USD 131 of GPT-4; cost and model identity are therefore reported, but this project does not fix a vendor or a euro ceiling. Peng et al. [3] showed that the subsequent wave of AutoPT papers lacked (1) a shared architectural taxonomy and (2) a fair comparison under one protocol. Their bake-off exceeds a semester. What a master’s student can complete is to take that taxonomy as the **language of the method** and answer a smaller, still original question:
-
-> Across multiple self-hosted fitness applications, which main weakness class does a new AutoPT agent name from black-box HTTP evidence; do ZAP, Nuclei, a HITL campaign, a multi-agent swarm, and an overnight loop confirm that class; and how much of the AI output is evidence rather than hallucination?
-
-Peng et al. found that extra agents, large Kali menus, and mismatched knowledge bases often do not raise scores, while flag-style hallucinations are common. This project tests those claims on a fitness corpus rather than assuming them. It uses:
-
-1. one traditional black-box DAST scanner (OWASP ZAP);
-2. one template-based black-box scanner (Nuclei, HTTP templates only);
-3. one new AutoPT agent (student-built, classified on Peng’s six dimensions, local and/or cloud LLM) in three modes: HITL single-agent, multi-agent swarm, overnight loop.
-
-The student does not pre-commit to a favourite class such as broken object-level authorisation. The agent proposes one OWASP API class; HTTP evidence across applications accepts or rejects that claim. A short fix list is applied on one or two representative forks (not every application). The same black-box protocol is retested there. Confirmed issues are labelled with OWASP API Top 10 and MITRE ATT&CK. A hardening checklist for the class is written for the whole family.
-
-This proposal is sized so that the work can be finished in one semester without repeating Peng et al.’s multi-billion-token comparison. Local and cloud LLMs are interchangeable backbones of T3 (Section 9.0), not extra scored products.
-
----
-
-## 2. Problem statement
-
-Security teams and small product organisations lack evidence on **which weakness class actually dominates** self-hosted fitness APIs, and on **how much an open-source AI testing tool helps** at naming and confirming that class, compared with ordinary black-box scanners, when the tester has no source, no OpenAPI specification, and no insider maps.
-
-The five papers already answer pieces of this question, not the joint question:
-
-| Source | Established result | What it does not establish (this project) |
+| Paper | What it already showed | What it doesn't cover (and this project does) |
 | --- | --- | --- |
-| Papageorgiou et al. [5] | Consumer mHealth applications mishandle sensitive data; a family-level state of practice is worth studying | No LLM tester; Play Store APKs rather than self-hosted APIs; static and dynamic APK methods that this laboratory does not score |
-| Sun et al. [4] | Missing access checks are a first-class web-application class; two roles plus force-browse is the evidence shape | Static sitemaps / SAST — out of empirical scope; not fitness APIs; no AI |
-| Happe and Cito [2] | LLMs can propose pentest steps on an authorised laboratory; overnight autonomy is ethically loaded | Short prototype, one VM, no multi-application family, no ZAP/Nuclei baseline |
-| Deng et al. [1] | Naive chat fails on long engagements; HITL plus truncated memory works; score sub-tasks, not model prose | HTB/VulnHub boxes and a GPT-4 budget; not a fitness-API corpus |
-| Peng et al. [3] | Black-box AutoPT taxonomy; extra agents, tools, and RAG often fail; flag hallucination is common | Thirteen frameworks × XBOW CTF, more than 10 billion tokens — not a semester, not this product family |
+| Papageorgiou et al. | Free health apps mishandle sensitive data; worth looking at as a family | No AI tester; looked at app-store apps, not self-hosted APIs |
+| Sun et al. | Missing access checks are a real bug class; two accounts plus a hidden URL is the proof | Used source-code analysis, which is out of scope here; not fitness apps; no AI involved |
+| Happe and Cito | AI can suggest pentest steps in an authorized lab; unsupervised AI raises ethical questions | One machine, one app; no scanner baseline; no family of apps |
+| Deng et al. | Plain chat fails on long jobs; a person in the loop plus short notes works; measure finished sub-tasks, not prose | Tested on Hack The Box / VulnHub machines and cost real money; not fitness APIs |
+| Peng et al. | Gave the field a shared vocabulary; more AI roles, tools, or reference material often don't help; AI testers invent success | Their comparison used thirteen frameworks and over ten billion tokens, far bigger than one semester, and not this app family |
 
-Peng et al. explicitly set white-box and grey-box outside their empirical scope. This project follows that empirical boundary. Vendor material mixes knowledge levels, rarely reports false-success rates, and usually demonstrates a single product.
+Peng et al. didn't run source-code-based tests in their own comparison either, and I'm following that same line. Vendor blog posts often blur that distinction, rarely count when the AI claims a false success, and usually only cover one product.
 
-**Gap.** A small, reproducible, defensive case study that (a) uses Peng’s taxonomy, (b) runs a black-box-only protocol on multiple fitness products rather than one CTF or one application, (c) lets a new AutoPT agent define the main weakness class before the focused campaign, and (d) compares HITL, swarm, and overnight modes (Happe’s plan versus loop; Deng’s HITL versus Peng’s swarm warning), with local and/or cloud LLMs as T3 backbones.
+What this project adds: a small, defensive, repeatable case study that speaks Peng's vocabulary, tests several fitness apps from the outside, lets the AI name the main weakness before I go looking for it, and compares a person-driven session against cooperating AI roles and an unsupervised overnight run. Local and cloud models are both allowed.
 
 ---
 
 ## 3. Research questions
 
-Three questions, and only these three, structure the empirical work.
+- **RQ1.** Tested only from the outside, which main weakness does the AI tester name for this family of fitness apps, and how many running apps do ZAP, Nuclei, the person-driven session, the cooperating AI roles, and the overnight run actually confirm it on (with saved evidence)?
+- **RQ2.** Once I review the results, what share of them holds up, both the overall claim and the per-app findings, and how often does the AI claim success with no real evidence behind it?
+- **RQ3.** After a short round of fixes aimed at that one weakness on one or two apps, which confirmed findings disappear on a retest, and does the resulting checklist still make sense for the apps I didn't patch?
 
-**RQ1.** Under black-box conditions, which main weakness class does the new AutoPT agent name for this fitness-application family, and which of ZAP, Nuclei, HITL, the swarm, and the overnight loop confirm that class (with HTTP evidence) on how many of the running applications?
-
-**RQ2.** What share of AI output is confirmed after human review — both the family-level main-class claim and the per-application findings — and how often does the model claim success without usable evidence (Peng et al.’s hallucination / false-success problem)?
-
-**RQ3.** After a short hardening pass on one or two representative forks aimed at that AI-defined main class, which confirmed findings disappear on a black-box retest, and does the resulting checklist still apply to the other applications that showed the same class?
-
-No research question requires writing exploits, a full kill-chain, grey-box or white-box campaigns, or testing third-party production applications.
+None of these require writing exploits, chaining bugs into a full attack, reading source code, or testing anyone's live production system.
 
 ---
 
 ## 4. Objectives
 
-1. Deploy the five self-hosted fitness applications in Section 5 (target five; minimum four for a pass).
-2. Bind each instance to `127.0.0.1` with two synthetic user accounts (unique ports; one stack at a time if memory requires it).
-3. Build a new AutoPT agent (thin orchestrator: facts file, small HTTP tool menu, local and/or cloud LLM) and classify it with Peng’s six dimensions (Section 6.2).
-4. Run the black-box screen on every running application (ZAP and Nuclei; no source and no OpenAPI in the prompt).
-5. Define the main weakness with the agent: one HITL session that may see only (i) public README or feature bullets, (ii) truncated ZAP/Nuclei class names, (iii) observed HTTP routes from normal registration. Required output: exactly one OWASP API Top 10 class and a one-sentence defender meaning. The human locks that class for the remainder of the semester, or records a later contradiction.
-6. Run a focused black-box campaign of that class with the agent in HITL on every running application; run a multi-agent swarm and one overnight loop on one representative application.
-7. Classify every finding as true positive, false positive, or unverified claim.
-8. Implement five to eight concrete fixes for the main class on one or two forks (defender work after scoring; not a grey-box test condition).
-9. Retest black-box on those forks with ZAP, Nuclei, and HITL (swarm and overnight are not required on retest).
-10. Map confirmed findings to OWASP API Security Top 10 and one MITRE ATT&CK technique.
-11. Deliver a 20–30 page report and a family hardening checklist for the AI-defined class.
+1. Get the five apps from Section 5 running (five is the goal, four is still a pass).
+2. Bind each copy to my own machine (127.0.0.1) with two made-up user accounts each (different ports, or one app running at a time if memory is tight).
+3. Build a small AI tester (short notes, a small set of HTTP actions, local and/or cloud model) and describe it using Peng et al.'s six design dimensions (Section 6.2).
+4. Run ZAP and Nuclei against every running app, without giving them source code or an API specification.
+5. Ask the tester, once, for the single main weakness. It only sees public README notes, short scanner category names, and routes visible during normal signup. It must answer with exactly one OWASP API Top 10 category and one sentence explaining why. I keep that category for the rest of the semester unless something clearly contradicts it later.
+6. Check for that weakness on every running app with a person driving the AI session. On one representative app, also try cooperating AI roles and one unsupervised overnight run.
+7. Mark every result as confirmed, false, or unverified.
+8. Apply five to eight concrete fixes for that one weakness on one or two app copies.
+9. Retest those copies with ZAP, Nuclei, and the person-driven AI session (cooperating roles and the overnight run aren't required on the retest).
+10. Label every confirmed finding with an OWASP API Top 10 category and a MITRE ATT&CK technique.
+11. Write a 20-30 page report and a hardening checklist for the app family.
 
 ---
 
-## 5. Targets: corpus of open-source fitness applications
+## 5. The five fitness apps
 
-Each application is a laboratory instrument, not a product the student is shipping. All tests run on the student’s Docker instances. Public production sites are out of scope.
+Each app is a test target, not something I'm building or shipping. All tests run against my own Docker copies. Public production sites are never touched.
 
-### 5.1 Corpus
+### 5.1 The set
 
-These five applications constitute the experiment. A row is dropped only if it fails to start in weeks 2–4; the reason is recorded. A pass requires at least four running applications.
+These five apps are the actual experiment. I only drop one if it genuinely won't start during weeks 2-4, and I write down why. A pass needs at least four running apps.
 
-| # | Project | Repository (indicative) | Description | Role in the experiment |
-| --- | --- | --- | --- | --- |
-| 1 | Workout.cool | [Snouzy/workout-cool](https://github.com/Snouzy/workout-cool) | MIT coaching platform (plans, exercise database, progress). Docker Compose. | First stack; TypeScript/Next; plan and history identifiers. |
-| 2 | FitTrackee | [SamR1/FitTrackee](https://github.com/SamR1/FitTrackee) | Self-hosted outdoor tracker (GPX, maps, workouts). Flask and Vue; Docker. | GPS- and health-adjacent files; per-user activities. |
-| 3 | openGym | [DuarteSantos8/openGym](https://github.com/DuarteSantos8/openGym) | Gym and body-weight tracker; passkeys; Compose. | Smaller surface; passkeys visible from the outside. |
-| 4 | FitnessTrack | [Gman0909/FitnessTrack](https://github.com/Gman0909/FitnessTrack) | Progressive-overload strength logger; Docker and SQLite. | Light stack; two-account set logs. |
-| 5 | Endurain | [endurain-project/endurain](https://github.com/endurain-project/endurain) (Codeberg is canonical) | Strava-class tracker (GPX/TCX/FIT, activity privacy, followers). Compose, PostgreSQL, Redis. | Heaviest stack; skip with a written reason if it will not start. |
+| # | App | What it is | Why it's included |
+| --- | --- | --- | --- |
+| 1 | Workout.cool | Coaching platform: plans, exercises, progress tracking. Runs via Docker Compose. | First app to set up; modern web stack; has plan and history IDs to test. |
+| 2 | FitTrackee | Outdoor activity tracker: GPS routes, maps, workouts. | Involves GPS and health-adjacent files, per-user activity data. |
+| 3 | openGym | Gym and bodyweight tracker with passkey login. | Smaller surface, and passkey login is visible from the outside. |
+| 4 | FitnessTrack | Strength-training logger. | Lightweight stack, easy to set up two accounts and compare logs. |
+| 5 | Endurain | Activity tracker with GPX/TCX/FIT files, privacy settings, and followers. | Heaviest stack of the five; dropped with a written reason if it won't run. |
 
-If an application does not start cleanly, one extra self-hosted multi-user Docker fitness application (for example LibreFit) may be substituted so that the corpus still has at least four running instances. Closed commercial applications (Hevy, Strong, MyFitnessPal) and university gym production systems are excluded.
+If one app won't start, I may swap in one extra self-hosted, multi-user fitness app (for example LibreFit) so at least four are still running. Closed commercial apps like Hevy, Strong, and MyFitnessPal, and any university production system, are out of scope.
 
-Optional version pair on one application only (if the supervisor requires a “known CVE class” story in the sense of Peng §5.6.2): pin one older laboratory image and one newer image that the maintainers mark as fixed, one stack at a time, still on localhost. Not required for a pass.
+### 5.2 What every remaining app needs to offer
 
-Bring-up outcome (19 September 2026): [`Phase-1-Lab-Log.md`](Phase-1-Lab-Log.md). That log is an operational annex, not a change of scientific scope.
+- Login and at least two user accounts (this is what makes the two-account authorization test possible).
+- Per-user data, such as workouts, metrics, GPX files, or plans, addressed by an ID.
+- At least one export, upload, or sharing feature, since that's often where health-related data leaves the account.
+- An HTTP interface reachable on localhost, so the testers never need the source code.
 
-### 5.2 Minimum features (every application that remains in the corpus)
+I only read source code later, to apply fixes on the one or two copies I patch. The scanners and the AI tester never see it.
 
-- Login and at least two user accounts (Sun: two sessions are the instrument).
-- Per-user objects (workouts, metrics, GPX, or plans) addressed by identifier.
-- At least one export, upload, or share path (Papageorgiou: export and share are where health-adjacent data leave the account boundary).
-- HTTP interface on localhost (black-box testers need no source).
+### 5.3 How far I go on how many apps
 
-Source of a fork is used later to apply fixes on the representative application(s), not to feed the scanners. Sun’s analyser remains in the background chapter.
-
-### 5.3 Allocation of effort across applications
-
-| Layer | What runs | On how many applications |
+| Step | What runs | On how many apps |
 | --- | --- | --- |
-| Screen | ZAP and Nuclei | Every running application |
-| AI main-class definition | New AutoPT agent, HITL, family-level | Once (truncated evidence from all screens) |
-| Focused HITL test | New agent, single-agent HITL, locked class | Every running application |
-| Swarm | New agent, two or three prompt-defined roles, shared facts file | One representative application |
-| Overnight loop | Unattended run, localhost kill switch | One representative application, one night |
-| Fix and retest | Five to eight fixes, then ZAP, Nuclei, and HITL | One or two representative forks that showed the class |
+| First pass | ZAP and Nuclei | Every running app |
+| Name the main weakness | AI tester, person-driven, looking at the whole family | Once, using short notes gathered from all apps |
+| Focused test | Same AI tester, person-driven, checking the chosen category | Every running app |
+| Cooperating AI roles | Two or three AI roles sharing the same notes | One representative app |
+| Overnight run | Unattended, stopped by a timer | One representative app, one night |
+| Fix and retest | Five to eight fixes, then ZAP, Nuclei, and the person-driven AI session | One or two apps that showed the weakness |
 
-Depth is the class. Breadth is the corpus. Five codebases are not all patched in depth.
+I go wide across all five apps, but deep on just one weakness. I'm not deeply patching every codebase.
 
 ---
 
-## 6. Taxonomy and related findings
+## 6. What I'm taking from the research papers
 
-This project does not rerun Peng et al.’s thirteen-framework XBOW experiment. It reuses their definitions so that the report is comparable to that survey.
+I'm not repeating Peng et al.'s huge thirteen-framework comparison. I'm reusing their definitions so the report reads clearly against that survey.
 
-### 6.1 Knowledge levels (Peng §2.1)
+### 6.1 How much the tester is allowed to know
 
-| Level | Peng’s definition | This project |
+| Level | What it means | What I do |
 | --- | --- | --- |
-| White-box | Source and architecture fully known (code audit / SAST as the main paradigm) | Out of the empirical scope. Named in the report so the boundary is explicit. No SAST campaign, no full code audit. |
-| Grey-box | Partial prior knowledge (insider-like access: maps, source hints, planted credentials beyond normal registration) | Out of the empirical scope. Same cut as Peng’s bake-off. No Semgrep campaign, no source in prompts, no OpenAPI dump as tester input. |
-| Black-box | Zero internals; only external interfaces | The only empirical protocol. ZAP, Nuclei, and the new AutoPT agent (HITL, swarm, overnight) see only localhost HTTP. No source, no architecture notes in the prompt. Public README bullets are allowed (anyone can read them). |
+| White-box | Full source code and architecture are known; the main method is a code audit or static analysis. | Not used. I name it here so the boundary is explicit. |
+| Grey-box | Partial inside knowledge: architecture hints, source snippets, or planted credentials beyond a normal signup. | Not used. No source, no API spec, and no map handed to any tool. |
+| Black-box | Only the outside interface is visible. | The only level I test at. ZAP, Nuclei, and my AI tester only ever see localhost HTTP traffic and whatever a normal visitor could read. |
 
-Peng’s AutoPT bake-off was black-box only. This project keeps that empirical cut and moves the target from CTF/XBOW to a multi-application fitness corpus, with ZAP, Nuclei, and a new AutoPT agent (HITL, swarm, overnight) instead of thirteen frameworks.
+Peng et al.'s own comparison was black-box only. I'm keeping that and moving the target from CTF challenges to real fitness apps, using ZAP, Nuclei, and one small tester instead of their thirteen frameworks. Kill Chain, PTES, NIST SP 800-115, and ATT&CK stay as background reading and labeling vocabulary, not as a full attack-emulation lab.
 
-Classic human models listed in the survey (Kill Chain, PTES, NIST SP 800-115, ATT&CK) remain labels and background, not a Caldera laboratory.
+### 6.2 How I'm describing my own AI tester
 
-### 6.2 Six design dimensions (Peng §3) — classification of the student agent
+Peng et al. suggest describing any AI security tester along six dimensions. Here's how mine is set up:
 
-| Dimension | What Peng asks | How the new AutoPT agent is classified in this laboratory |
+| Dimension | Peng's question | How my tester handles it |
 | --- | --- | --- |
-| 3.1 Architecture | Who decides? One agent versus many; role = own window plus authority | Three scored modes of the same codebase: (A) HITL single-agent; (B) swarm of two or three prompt-defined roles (planner / executor / reviewer) sharing one facts file; (C) overnight unattended loop. Peng §5.1 is measured, not used as a reason to skip swarms. |
-| 3.2 Plan | Linear / tree / graph plus feedback | HITL: linear ReAct or a small penetration-testing task tree (Deng). Swarm: roles hand off through the facts file. Overnight: same planner with a wall-clock stop. No graph rewrite engine. |
-| 3.3 Memory | Experience versus knowledge; compress; organise | Experiential only: a student-maintained facts file (structure-bound, lite) plus truncated tool output. Same file for HITL, swarm, and overnight. No HackTricks RAG (Peng §5.2: mismatched knowledge bases often hurt). |
-| 3.4 Execution | Whether / which / how; tool layers | Small menu: browser, `curl`, ZAP/Nuclei history. Overnight may call the same menu only. Peng §5.4: successful traces are atomic HTTP/Python, not a large Kali inventory. |
-| 3.5 External knowledge | Construct → retrieve → generate | Two AI jobs, both laboratory-only: (1) define the main weakness class from truncated black-box evidence; (2) test that class per application and mode. No generic Top-100 payload dump. |
-| 3.6 Benchmarks | Testbed and metrics; contamination | Testbed: several single-host product APIs, not XBOW CTF. Success = confirmed HTTP evidence, not “the swarm named this as the main bug.” Overnight success uses the same evidence rule. |
+| Who decides | One AI conversation, or several cooperating roles? | Three ways to run the same program: (A) one conversation with me driving it; (B) two or three cooperating roles (plan / run / review) sharing one notes file; (C) unattended overnight. Peng found extra roles often don't help, so I'm checking that here rather than assuming it. |
+| How it plans | A straight line, a tree, or a graph, with feedback? | Person-driven: a simple loop or a small task list. Cooperating roles: they pass information through the shared notes file. Overnight: the same planner, just stopped by a timer. |
+| Memory | Its own experience, or a big reference wiki? | Just its own experience: a notes file I maintain, plus short tool output. Same file across all three modes. No large hacking-wiki dump, since Peng found the wrong reference material often hurts results. |
+| What it can call | A wide toolset or a narrow one? | A short menu: browser, curl, and ZAP/Nuclei history. Peng found that useful results came from ordinary HTTP and Python, not a huge tool list. |
+| Where its knowledge comes from | Built in, fetched, or generated on the spot? | Two jobs only: name the main weakness from short notes, and test that category on each app. No generic exploit-payload library. |
+| How I score it | What counts as success? | Success means a saved HTTP request and response, not a confident-sounding claim. Same rule for the overnight run. |
 
-### 6.3 Findings adopted as design rules (Peng §5–6)
+### 6.3 Ground rules I'm taking from Peng et al.
 
-1. **Memory first.** Keep a facts file; do not rely on a long chat transcript.
-2. **HITL versus swarm versus overnight is an empirical question** on this corpus. Peng §5.1 reported that extra roles often fail; this project checks whether that holds here.
-3. **More tools are not necessarily better.** Small HTTP set; ZAP, Nuclei, one new agent (three modes, not three extra products).
-4. **Knowledge bases only if they match this application.** No generic payload wiki.
-5. **Hallucinations are structural.** Never treat the model’s prose as success or as the main weakness; require a saved request and response (overnight included).
-6. **Do not treat software-engineering-bench fame as AutoPT skill.** The scientific object is the student-built agent plus the named backbone(s), local and/or cloud, not a claim about frontier coding agents in general.
+- Keep written notes. Don't rely on a long chat history to remember things correctly.
+- Whether cooperating AI roles beat a single AI conversation is something I measure here, not something I assume going in.
+- More tools aren't automatically better, so I'm using a short HTTP toolset and one AI tester run three ways, not three separate products.
+- Reference material only helps if it actually matches the app; I'm not loading in a generic hacking wiki.
+- The AI claiming success is common and often wrong, so every finding needs a saved request and response, including from the overnight run.
+- A well-known coding model isn't automatically a good security tester, so I report exactly which model produced each result.
 
-### 6.4 How the other four papers support the same design
+Each rule maps directly onto how I run this project rather than staying abstract.
 
-Peng et al. supply the vocabulary. The other four papers justify design choices. None of them is a sixth scored tool.
+### 6.4 Why the other four papers matter here
 
-| Finding (citation) | Design choice it supports |
+Peng et al. give me the vocabulary. The other four papers explain why the project is built the way it is. None of them is a fourth scored tool.
+
+| What the paper found | What I do because of it |
 | --- | --- |
-| mHealth freeware already fails known privacy and security practice; data are sensitive by nature and by law [5] | Corpus = fitness/health APIs; synthetic users only; no production SaaS; family checklist as the defender output |
-| Access control has no single sanitiser; success = weaker role still receives the privileged page or object [4] | Two accounts on every application; confirm with HTTP status and body, not “the model said IDOR”; if the AI locks authorisation, the focused campaign is this pairwise check |
-| LLMs help as sparring partners, not as unsupervised attackers; high-level plan is not a low-level loop; refuse social-engineering dual-use [2] | T3-HITL is the main scored mode; swarm and overnight are measured, not assumed better; no phishing content; ATT&CK only as labels after confirmation |
-| Naive chat loses the global picture; HITL plus task tree plus truncated tool output raises sub-task completion; unattended pentest remains difficult; GPT-4 HTB spend was about USD 131 [1] | Facts file / small task tree; never paste full ZAP dumps; human executes hypothesised *classes* of check; progressive evidence rows; report model and local versus cloud |
-| Extra agents, large Kali menus, mismatched RAG often do not help; flag hallucination is structural [3] | One agent, three modes; small HTTP menu; no HackTricks; success = saved request/response |
+| Free health apps already fail basic privacy and security practice, and the data involved is sensitive by nature (Papageorgiou et al.) | I test fitness/health apps specifically, use only made-up accounts, avoid production apps entirely, and produce a checklist for the whole family. |
+| There's no single fix for access control; success means the weaker account still gets the privileged data (Sun et al.) | I test with two accounts on every app, confirm with the actual HTTP response rather than the AI's wording, and this is the default check whenever authorization is the named weakness. |
+| AI works best as a sparring partner, not an unsupervised attacker; a high-level plan isn't the same as a low-level command loop; social-engineering content should be refused (Happe and Cito) | The person-driven session is my main scored mode. Cooperating roles and the overnight run are measured, not assumed to be better. No phishing-style content is generated. ATT&CK labels are only applied after a finding is confirmed. |
+| Plain chat loses track of long jobs; a person in the loop plus a small task list improves results; unattended pentesting is genuinely hard; a live GPT-4 test cost about $131 (Deng et al.) | I use a notes file and a small task list, never paste a full scanner report into the AI, personally run the kind of check the AI names, count confirmed evidence rather than transcript length, and report which model I used and its cost if it's a cloud model. |
+| Extra roles, large tool lists, and mismatched reference material often don't help; AI testers regularly invent success (Peng et al.) | One tester, run three different ways; a short HTTP toolset; no generic hacking-wiki dump; success is only counted when I have a saved request and response. |
 
-The project is small because the literature already identifies which knobs matter, not because the scientific framing was skipped.
+This project stays small because the existing research already points to which choices matter. The reading isn't decoration; it's the reason the design looks the way it does.
 
-### 6.5 Literature findings inherited (results to cite, not experiments to rerun)
+### 6.5 Findings I'm citing, not re-running
 
-**Papageorgiou et al. (2018)** — domain and privacy  
-- A majority of sampled freeware mHealth applications failed well-known security and GDPR-era practice.  
-- Recurring classes: weak or missing authentication, records not bound to the logged-in user, unprotected data at rest or in transit, third-party telemetry, policies that do not match behaviour.  
-- Longitudinal observation: vendors often did not fix the same issues over time. A checklist is therefore a legitimate semester output.
+**Papageorgiou et al. (2018), on the app category itself:** most of the free health apps they studied failed well-known security and privacy practice. Common problems included weak or missing logins, data not properly tied to the logged-in user, unprotected data in storage or in transit, third-party tracking, and privacy policies that didn't match actual behavior. A checklist is a reasonable output for a project this size.
 
-**Sun et al. (2011)** — what an authorisation finding is  
-- Access-control bugs have no single sanitiser (unlike XSS or SQL injection).  
-- Intended privilege is visible in which links a role is shown; a bug is when a weaker role can still force-browse the hidden URL and obtain the privileged response.  
-- On REST fitness APIs, “HTML looks the same” translates to the same status and the same object body for user B on user A’s `…/{id}`.
+**Sun et al. (2011), on what counts as an authorization finding:** access-control bugs don't have one universal fix, unlike something like SQL injection. The intended access rule shows in which links a role is shown; the bug is when a lower-privileged account can still open the hidden link and get the same response. On a fitness API, that means the same status code and the same data for user B requesting user A's object by ID.
 
-**Happe and Cito (2023)** — LLM as tester  
-- High level: models already know the genre of a pentest plan (tactics and techniques).  
-- Low level: a closed command loop can act on an authorised laboratory VM, but is unstable (invented flags, safety-filter leakage, rambling without memory).  
-- Ethics: keep a human in the loop; refuse phishing and vishing; ATT&CK is a grading rubric, not a runtime.
+**Happe and Cito (2023), on using an AI as a tester:** at a high level, AI models already know what a pentest plan looks like. At a low level, a closed command loop can act on an authorized lab machine, but it's unstable, inventing flags, leaking through filters, and rambling without memory. Ethically, they kept a person in the loop, refused phishing-style content, and treated ATT&CK as a grading reference rather than something the AI runs directly.
 
-**Deng et al. (2024)** — HITL works; naive chat does not  
-- Off-the-shelf GPT-3.5, GPT-4, and Bard propose tools but lose the plot (context rot, last-turn bias, fabricated tool flags).  
-- PentestGPT (reasoning / task tree, generation, parsing; human executor) raised sub-task completion by 228.6% versus naive GPT-3.5 on a 13-machine / 182-sub-task bench.  
-- Live HTB: 4 of 10 boxes at approximately USD 131 of GPT-4 — cost is part of the result.  
-- Score progressive sub-tasks (a confirmed HTTP class counts), not a binary “rooted / not.”
+**Deng et al. (2024), on why a person in the loop matters:** plain GPT-3.5, GPT-4, and Bard can propose useful tools but lose track of the job. Their own tool, which uses a small task list, generation, and parsing, with a human running the actual commands, raised completed sub-tasks by 228.6% over a naive GPT-3.5 baseline across a 13-machine, 182-task benchmark. Their live Hack The Box test finished 4 of 10 machines at roughly $131 in GPT-4 usage. Cost is part of the result, and scoring partial progress (not just "fully solved or not") is what let them measure improvement at all.
 
-**Peng et al. (2026)** — AutoPT architecture findings (re-checked here on fitness APIs)  
-- Single-agent ReAct often matched or beat multi-agent graphs on Easy/Medium; extra roles remain a hypothesis.  
-- Memory is the real differentiator; mismatched knowledge bases often hurt (ablations improved when RAG was removed).  
-- Thirty-tool versus 115-tool variants scored almost the same — hence a small HTTP menu.  
-- Minimal coding-agent prompts beat most dedicated open-source frameworks. This project still builds T3 in order to classify it; Strix, CAI, and similar products are not scored.  
-- Eight of thirteen open-source frameworks hallucinated flags; chained-bug traces rarely closed the full chain (16.67%); knowing a CVE identifier did not imply a working payload (56.67% knew the identifier and still failed).  
-- Success in their bake-off is flag equality. Success here is saved HTTP — the same anti-hallucination idea.
+**Peng et al. (2026), on tester architecture:** a single AI conversation with a simple loop often matched or beat several cooperating AI roles on easier tasks, so "more roles helps" stays a hypothesis rather than a fact. What actually mattered was memory quality, and the wrong reference wiki measurably hurt results. Giving the AI 30 tools versus 115 tools barely changed outcomes, which is why I'm using a short toolset. Plain coding-assistant prompts beat most dedicated open-source pentest frameworks, which is why I'm still building and describing my own tester rather than adopting a commercial one. Eight of thirteen frameworks they tested invented findings; full attack chains rarely completed (16.67%); and knowing a vulnerability's ID didn't mean the AI could actually exploit it (56.67% knew the ID and still failed). Their definition of success was an exact flag match. Mine is a saved HTTP request and response: same underlying idea, don't score talk.
 
-### 6.6 Techniques executed versus catalogues used as labels
+### 6.6 What I actually run, versus what I only use as labels
 
-Happe’s stack is tactic → technique → procedure. This laboratory executes a short list of black-box HTTP procedures. It labels confirmed rows with OWASP API and one ATT&CK technique after the fact (Peng: ATT&CK is not the control plane).
+Happe's model goes tactic to technique to procedure. I run a short list of black-box HTTP procedures. Once a finding is confirmed, I attach an OWASP API category and, where it fits, one ATT&CK technique. ATT&CK doesn't drive what the tester does; it's applied afterward.
 
-**A. Techniques executed (black-box, localhost, two synthetic users)**
+**A. What I actually run (black-box, localhost, two made-up accounts):**
 
-| Laboratory technique | Ancestor | What is done |
+| What I run | Where it comes from | What I actually do |
 | --- | --- | --- |
-| Automated DAST crawl/scan | Industry baseline | OWASP ZAP quick/automated scan against `127.0.0.1` |
-| Template HTTP matching | Nuclei | HTTP templates only; no exploit packs |
-| Truncated HITL / task tree | Deng et al. | Model names the class of the next check; the human runs `curl` or the browser; dumps go to the facts file, not the full prompt |
-| Family-level class naming | Happe (high-level) and Deng (director) | One session: exactly one OWASP API identifier for the whole corpus |
-| Two-account object swap (force-browse) | Sun et al. | User B requests user A’s workout, GPX, plan, or metric identifier; compare status and body |
-| Authentication and session probes | Papageorgiou (weak authentication) | Registration, login, cookie/token reuse, logout — HTTP only |
-| Export, upload, or share path | Papageorgiou (data leaving the account) | Unauthenticated or cross-user export/download if the interface offers it |
-| Facts-file memory | Deng task tree and Peng memory | Structured rows: finding → evidence pointer → status; shared by HITL, swarm, overnight |
-| Pairwise before/after | Deng progressive score and RQ3 | Same black-box checks on the patched fork |
+| Automated scan | Industry-standard baseline | OWASP ZAP's automated scan against 127.0.0.1 |
+| Template-based HTTP matching | Nuclei | HTTP templates only, no exploit packs |
+| Person-driven, short-memory AI session | Deng et al. | The AI names the kind of check to try next; I run curl or the browser myself; results go into short notes, not back into the AI's context in full |
+| Naming the family-wide weakness | Happe (high-level planning) and Deng (task direction) | One session, one required output: exactly one OWASP API category for the whole set of apps |
+| Two-account object swap | Sun et al. | User B requests user A's workout, GPX file, plan, or metric by ID; I compare the status code and response body |
+| Login and session checks | Papageorgiou et al. (weak authentication) | Signup, login, cookie or token reuse, logout, checked over HTTP only |
+| Export, upload, or sharing checks | Papageorgiou et al. (data leaving the account) | Unauthenticated or cross-user export/download attempts, if the app offers that feature |
+| Shared notes file | Deng's task list and Peng's memory findings | Rows of finding, evidence pointer, and status; used across all three ways of running the tester |
+| Before/after comparison | Deng's progressive scoring and RQ3 | Same black-box checks re-run after the fix |
 
-Metasploit is not used. Password-spray campaigns are not the main story (Deng: brute-force addiction is a failure mode to log if the model requests it). Active Directory and Kerberos examples from Happe remain background.
+I'm not using Metasploit, and password spraying isn't a main focus (if the AI suggests brute-forcing logins, I log that as a failure mode rather than acting on it). Active Directory and Kerberos examples from Happe's paper stay as background reading.
 
-**B. Catalogues used only as labels (after HTTP confirmation)**
+**B. Reference lists used only as labels, after a finding is already confirmed:**
 
-OWASP API Security Top 10 (2023) is the class vocabulary the agent must name (exactly one identifier for RQ1):
+The OWASP API Security Top 10 (2023) is the vocabulary the AI tester has to use when naming the one main weakness:
 
-| ID | Name | Typical fitness-API HTTP check if this class is locked |
+| ID | Category | Typical check if this is the category we keep |
 | --- | --- | --- |
-| API1 | Broken Object Level Authorization | Sun swap on `/workouts/{id}`, GPX, plans |
-| API2 | Broken Authentication | Token and cookie handling; session-fixation-style HTTP |
-| API3 | Broken Object Property Level Authorization | Extra JSON fields (email, GPS, tokens) in another user’s object |
-| API4 | Unrestricted Resource Consumption | Only if evidenced (no stress-test as a goal) |
-| API5 | Broken Function Level Authorization | User hits an administrator-only route the UI hides |
-| API6 | Unrestricted Access to Sensitive Business Flows | Mass export or share if evidenced |
-| API7 | SSRF | Out of expected main class; secondary only |
-| API8 | Security Misconfiguration | Debug, default secrets, directory listing — often seen by ZAP/Nuclei |
-| API9 | Improper Inventory Management | Shadow or old routes if evidenced |
-| API10 | Unsafe Consumption of APIs | Secondary; third-party calls if visible in HTTP |
+| API1 | Broken Object Level Authorization | The two-account swap on workouts, GPX files, or plans |
+| API2 | Broken Authentication | Token and cookie handling |
+| API3 | Broken Object Property Level Authorization | Extra fields (email, GPS, tokens) visible in another user's object |
+| API4 | Unrestricted Resource Consumption | Only if I actually see evidence of it; no stress-testing as a goal |
+| API5 | Broken Function Level Authorization | A regular user reaching an admin-only route the UI normally hides |
+| API6 | Unrestricted Access to Sensitive Business Flows | Mass export or sharing, if I see evidence of it |
+| API7 | Server-Side Request Forgery | Unlikely to be the main finding; secondary at most |
+| API8 | Security Misconfiguration | Debug mode, default secrets, directory listings, usually caught by ZAP or Nuclei |
+| API9 | Improper Inventory Management | Old or forgotten routes, if I see evidence of them |
+| API10 | Unsafe Consumption of APIs | Secondary; third-party calls visible in the HTTP traffic |
 
-MITRE ATT&CK techniques (one per confirmed row, or “no close match”):
+MITRE ATT&CK technique, attached only to confirmed findings (or marked "no close match"):
 
-| ATT&CK | Name | When to attach |
+| Technique | Name | When it applies |
 | --- | --- | --- |
-| T1190 | Exploit Public-Facing Application | Broken object or function authorisation; misconfiguration on the HTTP API |
-| T1078 | Valid Accounts | Abuse of a normal login or session (not stolen production credentials) |
-| T1530 | Data from Cloud Storage Object | Export or download of GPX, backups, object stores if present |
-| T1552 | Unsecured Credentials | Tokens or secrets in responses, clients, or misconfiguration |
-| T1213 | Data from Information Repositories | Bulk history or metrics readable across users |
-| T1110 | Brute Force | Only if the model requests it and HTTP shows no throttle — log as RQ2 / failure mode; not the campaign |
+| T1190 | Exploit Public-Facing Application | Broken object or function authorization, or misconfiguration on the API |
+| T1078 | Valid Accounts | Misuse of a normal login or session, not stolen production credentials |
+| T1530 | Data from Cloud Storage Object | Export or download of GPX files, backups, or object storage |
+| T1552 | Unsecured Credentials | Tokens or secrets visible in responses, clients, or misconfiguration |
+| T1213 | Data from Information Repositories | Bulk history or metrics readable across accounts |
+| T1110 | Brute Force | Only if the AI suggests it and HTTP shows no throttling; logged as a failure mode, not pursued as a campaign |
 
-Procedures (the concrete `curl` lines) remain in the private evidence log. The public report prints classes and fixes, not exploit recipes.
+The messy curl commands stay in a private log. The public report only prints the category and the fix, never a step-by-step recipe.
 
 ---
 
 ## 7. Tools
 
-T1 and T2 are off-the-shelf scanners. T3 is a new AutoPT agent written by the student. Swarm and overnight are modes of T3, not extra products.
+The first two are ordinary scanners. The third is the small AI tester I build. Cooperating roles and the overnight run are two more ways of running that same tester, not two more products.
 
-| ID | Tool / mode | Role in Peng’s terms | Knowledge level | LLM |
+| ID | Tool / mode | What it is | Knowledge level | AI model used |
 | --- | --- | --- | --- | --- |
-| T1 | OWASP ZAP (automated / “quick” scan, localhost only) | Traditional security-tool DAST; no LLM. Baseline for non-LLM scanning. | Black-box | None |
-| T2 | Nuclei (ProjectDiscovery; HTTP templates against the laboratory URL only) | Template-based black-box scanner; still no source. | Black-box | None |
-| T3-HITL | New AutoPT agent, single-agent human-in-the-loop | Student-built assistant: facts file plus small HTTP menu; (A) define main weakness; (B) test that class per application. Fallback if the build slips: a 15-prompt notebook with the same research questions. | Black-box | Local and/or cloud (Section 9.0) |
-| T3-swarm | Same agent, two or three roles (planner / executor / reviewer) | Multi-agent swarm; roles share the facts file; no extra Kali inventory. One representative application. | Black-box | Same T3 backbones |
-| T3-night | Same agent, overnight unattended loop | Wall-clock kill switch. One representative application, one night. | Black-box | Same T3 backbones |
+| T1 | OWASP ZAP (automated scan, localhost only) | Standard scanner, no AI involved | Black-box | None |
+| T2 | Nuclei (HTTP templates, localhost only) | Template-based scanner, still no source code | Black-box | None |
+| T3, person-driven | My own tester, one conversation, I run the HTTP myself | Short notes plus a small toolset; names the main weakness, then tests it per app. If the program breaks, a 15-question fallback list covers the same ground. | Black-box | Local and/or cloud |
+| T3, cooperating roles | Same program, two or three roles (plan / run / review) | They share the same notes file; no extra tool menu | Black-box | Same as above |
+| T3, overnight | Same program, unattended | Stopped by a timer; one representative app, one night | Black-box | Same as above |
 
-**Definition of the new AutoPT agent.** A Python (or similar) orchestrator owned by the student: prompt templates, facts-file I/O, a small tool wrapper (`curl` / saved HTTP), LLM calls to a **local** runtime (for example Ollama) and/or a **cloud** chat API. Deng et al. (PentestGPT task tree) is the design reference, not a fourth scored tool. There is no new model training, no 115-tool router, and no payloads in the public repository. Changing backbone (local ↔ cloud, or one vendor to another) does not add a fourth product: it is the same T3 codebase. The report names the model identifier and local versus cloud on every call.
+"The tester I write" means a small program of my own: prompts, a notes file, a thin wrapper around curl and saved HTTP traffic, and calls to a local runtime (for example Ollama) and/or a cloud chat API. Deng et al.'s task-list design is the reference I'm building on, not a separate fourth tool. No model training, no giant tool router, and no exploit payloads in the public repository. Switching between a local model and a cloud model, or between vendors, doesn't count as a new tool; the report just names which model produced each result.
 
-**Why ZAP, Nuclei, and this agent, and not Strix, CAI, or Semgrep as extra products.** Peng §5.4: atomic HTTP, not a Kali inventory. Peng §2.1: Semgrep is grey/white-box SAST — named in Section 8.1, not executed. Swarm and overnight are in scope as T3 modes so that Peng §5.1 can be checked on this corpus. Other products may be mentioned only in Section 8.1.
+Why these three, and not commercial AI-pentest products or a source-code scanner as extras: Peng et al. found that a short HTTP toolset works about as well as a huge one. Semgrep and similar tools require reading source code, which breaks the black-box rule (they're named in Section 8.3 instead). Cooperating roles and the overnight run are included specifically so I can check Peng's claim about extra autonomy on this app family, not because I assume they'll help.
 
 ---
 
@@ -352,310 +273,248 @@ T1 and T2 are off-the-shelf scanners. T3 is a new AutoPT agent written by the st
 
 ### 8.1 In scope
 
-- Multiple Dockerized fitness applications on localhost (corpus in Section 5)
-- Synthetic accounts only
-- Black-box campaign only
-- ZAP, Nuclei, and a new AutoPT agent
-- Multi-agent swarm (T3 mode, one application)
-- Overnight loops (T3 mode, one application, localhost kill switch)
-- Local and/or cloud LLMs as T3 backbones (same protocol; recorded in the call log)
-- AI definition of the main weakness class (one locked OWASP API identifier)
-- Authentication, authorisation, secrets, session, export, and upload as seen from HTTP
-- Human confirmation (read responses; no exploit development)
-- Fix-and-retest of the same black-box protocol on one or two forks
-- OWASP API and ATT&CK label table
-- Peng taxonomy section in the report (two to three pages), including why grey-box and white-box are not run
-- 20–30 page report
+- Several Dockerized fitness apps running on localhost (Section 5)
+- Made-up accounts only
+- Black-box testing only
+- ZAP, Nuclei, and the AI tester I build
+- Cooperating AI roles, tested on one app
+- One unsupervised overnight run, on one app, stopped by a timer
+- Local and/or cloud models for the AI tester, with every call logged
+- The AI naming the single main weakness (one OWASP API category, kept for the rest of the semester)
+- Login, authorization, secrets, sessions, export, and upload, as seen from the outside
+- Fixing and retesting the same way on one or two app copies
+- OWASP API and ATT&CK labels on confirmed findings
+- A short taxonomy section in the report explaining why grey-box and white-box testing aren't used
+- A 20-30 page report
 
 ### 8.2 Out of scope
 
-- White-box empirical work (full audit, SAST as main paradigm, formal verification)
-- Grey-box empirical work (source in prompts, OpenAPI as tester input, Semgrep campaign, insider API map as a scored condition)
-- Testing only one application (unless four cannot be started — then document the failure; do not silently shrink the design)
-- Commercial AutoPT SaaS (CAI, Strix, and similar) as scored products
-- Cursor Cloud Agents as T3
-- Testing Workout.cool production, Endurain production, or any third-party live system
-- Full mobile reverse engineering, Frida, jailbreak, Active Directory / Caldera
-- Real wearables or real health records
-- Exploit proofs of concept in the report
-- Full Garak suites
-- Replication of Peng et al.’s thirteen-framework XBOW campaign
-- Student-chosen “main bug” a priori
-- Patching every application in the corpus
-- A 50–80 page thesis-length document
+- White-box testing (full code audits, static analysis as the main method, formal verification)
+- Grey-box testing (source code or API specs handed to the tester, a Semgrep-style scan, or insider maps used as a scored input)
+- Testing only one app, unless fewer than four can be started, in which case I document why rather than quietly shrinking the project
+- Commercial AI-pentest products, scored as tools
+- Testing any app's live production system
+- Full mobile reverse engineering, jailbreaking, or Active Directory attack simulation
+- Real wearable devices or real health records
+- Publishing exploit proof-of-concept code
+- Repeating Peng et al.'s full thirteen-framework comparison
+- Picking the "main weakness" myself before the AI names one
+- Patching every app in the set
+- A full 50-80 page thesis
 
-### 8.3 Tools considered, not executed
+### 8.3 Tools I considered but won't run
 
-Approximately half a page in the report: Semgrep (grey-box SAST — excluded by the empirical cut); Aikido Android; Thorfinn; iosHunt; TrashiOS; Caldera AI; Strix/CAI unattended — named and excluded (knowledge level, licence, hardware, or Peng-style token cost). Optional stretch only if weeks 1–10 are complete: ten local promptfoo cases if an application has a chat feature (at most ten extra calls).
-
-The catalog [`AI-Pentesting-Tools-Research-Catalog.md`](AI-Pentesting-Tools-Research-Catalog.md) is background. This project uses three tools; it does not rescan the market. Section-by-section reading notes for the five papers are in [`papers/`](papers/README.md).
+About half a page in the final report names tools like Semgrep (requires source code), and several mobile-specific and enterprise attack-emulation tools, explaining briefly why each is out (knowledge level, licensing, hardware, or cost). If time allows after week 10, I may add ten local test cases against an in-app chat feature, but this is optional and dropped first if the schedule slips.
 
 ---
 
 ## 9. Method
 
-### 9.0 LLM backbones (local and cloud)
+### 9.0 Local and cloud models
 
-T3 may call **local** models (for example via Ollama or another on-machine runtime) and **cloud** chat APIs. Both are in scope. They are backbones of the same agent, not two scored products.
+The AI tester can call local models (through something like Ollama) and cloud chat APIs. Both are allowed and both drive the same tester, not two separate experiments.
 
-| Rule | Practice |
+| Rule | What I actually do |
 | --- | --- |
-| Allowed backbones | Local LLM, cloud LLM, or both during the semester |
-| Recording | Every call: date, tool mode, application identifier, job (define-class / test / retest / swarm / overnight), model identifier, local versus cloud |
-| Prompt size | Truncated evidence only; never paste a full ZAP or Nuclei dump (Deng et al.) |
-| Switching | Changing backbone does not open a new experimental condition; log the date and model |
-| Overnight | Allowed with a wall-clock kill switch on localhost |
+| Which models | Local, cloud, or both, over the course of the semester |
+| Logging | Every call: date, mode, app, task, model name, and whether it ran locally or in the cloud |
+| Prompt size | Short evidence only, never a full scanner dump pasted into the prompt |
+| Switching models | Not a new experiment, just a logged event |
+| Overnight run | Allowed, stopped by a timer, localhost only |
 
-**Call log (required appendix):** as in the recording row above. Cost, if a cloud API is used, may be noted but is not a scientific limit of this proposal.
+### 9.1 Black-box testing steps
 
-### 9.1 Black-box protocol (Peng §2.1)
+**First pass, on every running app:** give the AI only that app's base URL and the fact that it's an authorized lab, nothing about the source or architecture. Create two accounts through normal signup (this stays black-box). Run ZAP's automated scan and Nuclei's HTTP templates. The result is a short list of finding categories with pointers to evidence, not full scan dumps, so the AI has something manageable to work from later.
 
-**Screen (every running application)**
+**Naming the main weakness, once, across the whole family:** the AI is only allowed public README notes, short category names from the scans, and route patterns visible during signup. It's not allowed source code, API specs, exploit recipes, or my own guess. It has to answer with exactly one OWASP API category, one explanatory sentence, and which apps it thinks show it. I either keep that answer or, if the session produced nothing usable, discard it and run once more. I don't shop around for a different answer I like better.
 
-- Inputs: that application’s base URL, “authorised laboratory,” no source, no OpenAPI, no architecture notes.
-- Accounts: create users as a normal registration flow (still black-box). Do not paste source snippets. Two sessions exist so a later authorisation check has Sun’s shape even if the AI locks a different class.
-- Tools: ZAP automated pass; Nuclei HTTP templates.
-- Output: truncated finding-class list with HTTP evidence pointers (not full dumps) — Deng’s parser rule: compress so the model cannot drown in the last scan.
+**Focused test, on every running app:** the AI may know the category name (that's the working hypothesis), but it still doesn't get source code or ready-made payloads. I run only the kind of check it suggests and save the evidence. If the category is authorization-related, the default check is Sun's two-account URL swap.
 
-**Define the main weakness (AI, once, family-level)**
+### 9.2 What counts as ground truth
 
-- Inputs allowed: public README or feature bullets; truncated class names from all screens; observed route patterns from registration (for example `workouts/{id}`).
-- Inputs forbidden: source, OpenAPI files, exploit recipes, the student’s preferred class.
-- Output required: exactly one OWASP API Top 10 identifier, a one-sentence defender meaning, and which applications the model claims show it.
-- Human action: lock that class, or write why the session is discarded (empty or garbage output) and rerun once. The class is not selected by shopping among outputs.
-
-**Focused test (every running application)**
-
-- The agent may know the locked class name (that is the hypothesis under test). It still must not receive source or payloads (Happe/Deng: the human is the executor).
-- The student executes only hypothesised classes of check and saves HTTP traces. If the locked class is access control, the default check is Sun’s pairwise object URL (user B requests user A’s `…/{id}`).
-- Stop when the focused checks for the locked class are done, or record why the session ended without a confirmed HTTP row.
-
-Fairness: the same two-user story, the same junior day-one tool setup, sequential stacks if the host cannot run them together.
-
-### 9.2 Ground truth
-
-The scientific object is the AI-defined main class, not a secret seed list written by the student in week 3.
-
-| Item | Role |
-| --- | --- |
-| Locked OWASP API class | Family-level hypothesis (RQ1) |
-| Per-application confirmed HTTP rows in that class | Support or reject the hypothesis |
-| Other confirmed classes | Report as secondary; they do not rewrite the locked class mid-semester |
-| Contradiction | If scanners later show a different class more often, that is a result (the AI main-class claim failed), not a protocol rewrite |
-
-New “main” classes are not added after the definition session. Secondary findings remain in the table.
+I'm measuring the category the AI actually named, not a secret bug list I wrote for myself beforehand. The category kept from the naming session is the main hypothesis (RQ1); confirmed per-app HTTP findings in that category support or reject it; other confirmed findings are secondary and don't get promoted to "main" partway through. If the scanners end up showing a different category more often, that's a valid result (the AI's claim didn't hold), not a reason to change the plan.
 
 ### 9.3 Metrics
 
-| Metric | Definition |
+| Metric | What it means |
 | --- | --- |
-| Main-class hit rate | Applications with at least one confirmed HTTP finding in the locked class / running applications |
-| Tool agreement | Which of T1, T2, T3 contributed those confirmations |
-| Precision | Confirmed / reported, per tool, pooled and per application |
-| Evidence rate | Findings with a saved request/response |
-| False-success count | LLM claims “done / critical / this is the main bug” with no evidence (Peng §5.6.3) |
-| Definition quality | Locked class matches the most frequent confirmed class (yes/no) |
-| Time | Hours per tool × application (screen versus focused) |
-| LLM calls | Count and backbone (local versus cloud), logged (Section 9.0) |
-| Retest delta | Locked-class findings still open on the one or two fixed forks |
-| Coverage by class | Locked class versus others (OWASP API) |
+| Main-category hit rate | Apps with at least one confirmed finding in the chosen category, divided by apps running |
+| Tool agreement | Which of ZAP, Nuclei, and the AI tester actually contributed each confirmation |
+| Precision | Confirmed findings divided by reported findings, per tool and per app |
+| Evidence rate | Share of findings backed by a saved request and response |
+| False-success count | Times the AI claimed a finding, or claimed it was "done," with no usable evidence |
+| Category quality | Whether the chosen category matches the most frequently confirmed one |
+| Time | Hours spent per tool per app |
+| AI calls | Count, plus local versus cloud, from the call log |
+| Retest change | Chosen-category findings still open after the fix |
+| Coverage by category | Chosen category versus everything else, using OWASP API |
 
-No significance tests. Transparent tables are the scientific level of this project.
+No statistical significance testing. Clear tables match the scale of this project.
 
-### 9.4 Labels (desk work)
+### 9.4 Labeling confirmed findings
 
-One row per confirmed finding (catalogues in Section 6.6 B):
+Each confirmed finding gets one row: which app, which check produced it, the OWASP API category, the ATT&CK technique, and whether it touches privacy-sensitive data such as workouts, GPS, or metrics. Allowed ATT&CK codes are the six listed in Section 6.6, or "no close match."
 
-`application ID | laboratory technique used (Section 6.6 A) | OWASP API ID | ATT&CK technique | privacy relevance (workout / GPS / metrics / none)`
+### 9.5 Fixing and retesting
 
-Allowed ATT&CK identifiers: T1190, T1078, T1530, T1552, T1213, T1110 (rare), or “no close match.” No Caldera. Papageorgiou’s privacy-relevance column is why a broken-object finding on GPX is not the same as a debug header.
-
-### 9.5 Fix and retest
-
-Select one or two forks that showed the locked class (prefer Workout.cool plus the lightest other hit). Apply the smallest high-value changes for that class (for example ownership checks, authentication on export, secrets out of the client, role changes locked, login throttle, debug off — whichever the locked class actually is). Then rerun ZAP, Nuclei, and HITL on those forks only. Reading a fork in order to implement a fix is defender work; it does not open a grey-box scoring condition.
-
-The checklist is written for every application in the corpus that shares the class, even if only one or two were patched.
+I pick one or two app copies that showed the chosen category (Workout.cool first if it's affected, plus whichever other app is easiest to patch), and apply the smallest changes that actually close that category: ownership checks, login requirements on export routes, secrets moved server-side, locked-down role changes, login throttling, and debug mode turned off. I then rerun ZAP, Nuclei, and the person-driven AI session on those copies only. Reading source code to apply the fix is defender work, not a grey-box test; the checklist still applies to every app in the set that shares the same weakness, even the ones I didn't patch.
 
 ---
 
 ## 10. Work plan
 
-Each step has a purpose and a completion criterion. Stretch items may be skipped; phases may not.
+Each phase has a clear purpose and a clear "done" condition. Optional extras can slip; the core phases can't.
 
-### Phase 0 — Frame the science (week 1)
+### Phase 0, week 1: set the frame
 
-| Step | Activity | Purpose |
-| --- | --- | --- |
-| 0.1 | Read Peng et al. (taxonomy and §5 findings) plus Deng, Happe, Sun, and Papageorgiou (map in Section 6.4) | Shared vocabulary; each paper licenses one design choice, not a sixth tool |
-| 0.2 | Write a two-page protocol: three tools, black-box only, multi-application corpus, AI main-class rule, ethics | Supervisory sign-off before any scan |
-| 0.3 | Confirm a local LLM and/or a cloud LLM responds through T3 | Prove at least one backbone before Phase 2 |
+| Step | What I do |
+| --- | --- |
+| 0.1 | Read the five papers (map in Section 6.4) to build shared vocabulary |
+| 0.2 | Write a two-page protocol covering the three tools, black-box scope, multiple apps, and ethics |
+| 0.3 | Confirm that a local and/or cloud model responds through my tester |
 
-**Phase objective.** The project is a Peng-taxonomy multi-application case study, not a one-target demonstration.  
-**Completion.** Signed ethics page, protocol, and a screenshot of a successful T3 call (local and/or cloud).
+*Goal: a Peng-taxonomy case study across several apps, not a single-target demo.*
+*Done when: signed ethics page, protocol written, and one successful AI test call (local or cloud).*
 
-### Phase 1 — Bring up the corpus (weeks 2–4)
+### Phase 1, weeks 2-4: bring the apps up
 
-| Step | Activity | Purpose |
-| --- | --- | --- |
-| 1.1 | `docker compose up` each Section 5 application in turn; two synthetic accounts on each | Prove the instruments run |
-| 1.2 | Record image tag / commit hash per application | Reproducibility (Peng §4 hygiene) |
-| 1.3 | Drop stacks that will not start; keep a dropout log | Honest corpus, still at least four applications |
-| 1.4 | Create the empty facts file and token-log sheet | Memory-first (Peng §6) from day one |
+| Step | What I do |
+| --- | --- |
+| 1.1 | Start each app from Section 5 in Docker, with two made-up accounts each |
+| 1.2 | Record the exact image tag or commit hash used for each app |
+| 1.3 | Drop any app that won't start, and keep a written log of why |
+| 1.4 | Set up the notes file and the AI-call log from day one |
 
-**Phase objective.** A set of authorised, pinned, multi-user fitness systems.  
-**Completion.** At least four applications accept two synthetic users on `127.0.0.1`.
+*Goal: authorized, version-pinned, multi-user fitness systems running locally.*
+*Done when: at least four apps accept two made-up users on localhost.*
 
-Operational record: [`Phase-1-Lab-Log.md`](Phase-1-Lab-Log.md).
+### Phase 2, weeks 5-6: first pass on every app
 
-### Phase 2 — Black-box screen, all applications (weeks 5–6)
+| Step | What I do |
+| --- | --- |
+| 2.1 | Bind all ports to localhost; made-up data only |
+| 2.2 | Run ZAP's automated scan on each app, keeping only evidenced results |
+| 2.3 | Run Nuclei's HTTP templates on each app, same evidence rule |
+| 2.4 | Build one comparison sheet: app by tool by OWASP category |
 
-| Step | Activity | Purpose |
-| --- | --- | --- |
-| 2.1 | Bind ports to `127.0.0.1`; synthetic data only | Containment and privacy |
-| 2.2 | ZAP automated scan per application; keep evidenced rows | Traditional baseline across the family |
-| 2.3 | Nuclei HTTP templates per application; same confirmation rule | Second non-LLM signal |
-| 2.4 | One comparison sheet: application × tool × OWASP class | Input to the AI definition session |
+*Goal: see what two ordinary scanners find, with no inside knowledge, across the whole family.*
+*Done when: ZAP and Nuclei tables exist for every app in the set.*
 
-**Phase objective.** What two ordinary black-box scanners see without internals, on every running application.  
-**Completion.** ZAP and Nuclei tables exist for each application in the corpus.
+### Phase 3, first half of week 7: the AI names the main weakness
 
-### Phase 3 — AI defines the main weakness (week 7, first half)
+| Step | What I do |
+| --- | --- |
+| 3.1 | Run one person-driven session: short scan summaries, README notes, and observed routes only |
+| 3.2 | Require exactly one OWASP category, one sentence, and which apps it's claimed on |
+| 3.3 | Keep that answer, or discard and rerun once if the session produced nothing usable |
 
-| Step | Activity | Purpose |
-| --- | --- | --- |
-| 3.1 | One HITL session: truncated screen classes, README bullets, observed routes | Let T3 name the family-level main class |
-| 3.2 | Require output = one OWASP API identifier, one sentence, claimed applications | Prevent an undifferentiated list of every class |
-| 3.3 | Lock the class (or one discard-and-rerun) | RQ1 hypothesis frozen |
+*Goal: let the AI pick the family-wide category, rather than me picking a favorite.*
+*Done when: the chosen category is written down in the notes file.*
 
-**Phase objective.** The main weakness is defined by the AI, not by a prior student preference.  
-**Completion.** Locked class is written in the facts file.
+### Phase 4, second half of week 7 into week 8: test that weakness everywhere
 
-### Phase 4 — Focused AI test of that class (week 7, second half, into week 8)
+| Step | What I do |
+| --- | --- |
+| 4.1 | Run the person-driven tester on each app, allowed to know the category name but not the source |
+| 4.2 | Personally run only the kind of check it suggests, and save the HTTP evidence |
+| 4.3 | Update the notes file from confirmed evidence only |
 
-| Step | Activity | Purpose |
-| --- | --- | --- |
-| 4.1 | HITL agent per application, class name allowed, no source | Test the locked hypothesis on each product |
-| 4.2 | Student executes only hypothesised classes of check; save HTTP traces | Separate model speech from evidence |
-| 4.3 | Update facts file from confirmed HTTP only | Bind feedback to memory (Peng §3.2.4 / §6) |
+*Goal: check whether the named category actually holds up across the app family.*
+*Done when: a per-app results table is complete, with the AI-call log up to date.*
 
-**Phase objective.** Measure whether the AI-named class is real on the corpus.  
-**Completion.** Per-application T3 table complete; call log as in Section 9.0.
+### Phase 5, week 8: review and label
 
-### Phase 5 — Human review and labels (week 8)
+| Step | What I do |
+| --- | --- |
+| 5.1 | Mark every finding as confirmed, false, or unverified |
+| 5.2 | Count how often the AI claimed success with no evidence |
+| 5.3 | Check whether the chosen category matches the most frequently confirmed one |
+| 5.4 | Add OWASP API and ATT&CK labels to confirmed findings |
 
-| Step | Activity | Purpose |
-| --- | --- | --- |
-| 5.1 | True positive / false positive / unverified for every row | RQ2 |
-| 5.2 | Count false-success (model stopped as if done, or named a class with no HTTP) | Operationalise Peng §5.6.3 |
-| 5.3 | Score definition quality (locked class = most frequent confirmed class?) | Close RQ1 |
-| 5.4 | OWASP API and ATT&CK labels for confirmed rows only | Standard language, no extra laboratory |
+*Goal: turn raw results into a defensible picture of the app family, not just a scanner export.*
+*Done when: every confirmed issue has a label, and the hit rate is calculated.*
 
-**Phase objective.** A defensible family picture, not a tool export.  
-**Completion.** Label table has one row per confirmed issue; main-class hit rate is computed.
+### Phase 6, weeks 9-10: fix the chosen weakness
 
-### Phase 6 — Harden the class on one or two forks (weeks 9–10)
+| Step | What I do |
+| --- | --- |
+| 6.1 | Pick one or two apps that showed the chosen category |
+| 6.2 | Implement five to eight targeted fixes for that category |
+| 6.3 | Commit changes with messages that reference the specific finding |
 
-| Step | Activity | Purpose |
-| --- | --- | --- |
-| 6.1 | Choose one or two applications that showed the locked class (Workout.cool preferred if it hit) | Depth without five parallel patches |
-| 6.2 | Implement five to eight small fixes for that class | Defender outcome for the family pattern |
-| 6.3 | Commit fixes with messages that name the finding identifier | Traceability |
+*Goal: close the main finding on a small number of apps, rather than patching everything shallowly.*
+*Done when: five to eight fixes are merged into the chosen app branch or branches.*
 
-**Phase objective.** Close the find-and-fix loop on the main weakness, not on every secondary noise row.  
-**Completion.** Five to eight fixes merged on the chosen laboratory branch(es).
+### Phase 7, weeks 10-11: retest
 
-### Phase 7 — Black-box retest (weeks 10–11)
+| Step | What I do |
+| --- | --- |
+| 7.1 | Rerun ZAP on the patched copy or copies |
+| 7.2 | Rerun Nuclei |
+| 7.3 | Rerun the person-driven AI session, with the same restrictions as before |
+| 7.4 | Build the before/after table and finish the checklist for the rest of the apps |
 
-| Step | Activity | Purpose |
-| --- | --- | --- |
-| 7.1 | ZAP again on the patched fork(s) | RQ3, traditional scanner |
-| 7.2 | Nuclei again | RQ3, template scanner |
-| 7.3 | HITL retest | RQ3, AI, same blindness as Phase 4 |
-| 7.4 | Retest-delta table and checklist for the other applications | What disappeared versus what the family still needs |
+*Goal: show that the fixes actually worked, from the outside, not just on paper.*
+*Done when: a before/after table exists for the patched apps, plus a checklist for the whole set.*
 
-**Phase objective.** Show upgrades of the main class, not only a list of defects.  
-**Completion.** Before/after exists for the patched application(s); checklist covers the corpus.
+### Phase 8, weeks 12-14: write it up and demonstrate it
 
-### Phase 8 — Write and demonstrate (weeks 12–14)
+| Step | What I do |
+| --- | --- |
+| 8.1 | Write the report chapters (Section 13) |
+| 8.2 | Finish the hardening checklist for the chosen category |
+| 8.3 | Prepare a 10-15 minute demo showing two accounts on two apps, before and after the fix |
+| 8.4 | Keep a buffer for delays without dropping RQ3 |
 
-| Step | Activity | Purpose |
-| --- | --- | --- |
-| 8.1 | Report chapters (Section 13) | 20–30 pages; taxonomy used correctly |
-| 8.2 | Hardening checklist for the locked class on fitness APIs | Transferable defender output |
-| 8.3 | 10–15 minute demonstration: two accounts on two applications, before/after on one | Examiner-visible multi-application result |
-| 8.4 | Buffer | Slips without dropping RQ3 |
-
-**Phase objective.** A graded, citable semester report.  
-**Completion.** PDF, tables, token log, demonstration.
-
-### Strategy (overview)
-
-```
-Frame (Peng taxonomy, ethics, local and/or cloud LLM)
-        ↓
-Stand up the five fitness applications (pass: at least four)
-        ↓
-BLACK-BOX SCREEN  —  ZAP + Nuclei  ×  every application
-        ↓
-AI DEFINES MAIN WEAKNESS  —  one locked OWASP API class
-        ↓
-FOCUSED BLACK-BOX TEST of that class  —  HITL agent × every application
-        ↓
-Review, labels, hallucination count, hit rate
-        ↓
-Fix five to eight issues of that class on one or two forks
-        ↓
-Retest BLACK-BOX on those forks
-        ↓
-Report + family checklist + demonstration
-```
+*Goal: a complete, graded semester report.*
+*Done when: final PDF, tables, call log, and demo are all ready.*
 
 ---
 
-## 11. Expected results
+## 11. What a good outcome looks like
 
-The project succeeds if the report can state, with tables:
+The project succeeds if the final report can state, with tables:
 
-- the identifier of the OWASP API class locked by the LLM as the main weakness of this family;
-- that class was confirmed on *k* of *n* running applications (or was not — still a valid result);
-- whether ZAP and Nuclei surfaced the same class, and whether the agent added authorisation-style rows;
-- counts of confirmed findings versus hallucinated or evidence-free claims (RQ2), including whether the definition session itself was evidence-free;
-- after fixes on one or two forks, locked-class recall moved from *A*% to *B*% there;
-- token and backbone log complete (local versus cloud, model identifiers);
+- which OWASP API category the AI named as the main weakness for this app family
+- whether that category was confirmed on k of n running apps, or wasn't, since either is a valid result
+- whether ZAP and Nuclei agreed with the AI, and whether the AI added authorization-style findings the scanners missed
+- how many findings were confirmed versus invented or unsupported (RQ2), including whether the naming session itself lacked evidence
+- how many chosen-category findings remained after fixing one or two apps
+- a complete AI-call log, showing local versus cloud use and which models were involved
 
-A mixed result is acceptable. Example: the agent named broken object-level authorisation as the main class; scanners mostly reported configuration noise; HTTP confirmed the class on three of five applications; half of the AI claims lacked evidence.
+A mixed result is fine. For example: the AI named broken object-level authorization as the main weakness; the scanners mostly found configuration noise; HTTP testing confirmed the weakness on three of five apps; and about half of the AI's claims lacked real evidence.
 
 ---
 
 ## 12. Deliverables
 
-| Deliverable | Form |
+| Deliverable | What it is |
 | --- | --- |
-| Laboratory corpus | Dockerized instances (pinned tags) for every running application, plus dropout log |
-| Main-weakness card | Locked OWASP API class, prompt, model reply, lock date |
-| Evaluation pack | Tables by application × tool, raw reports, LLM call log |
-| Report | 20–30 pages |
-| Taxonomy note | How T3 maps to Peng’s six dimensions (1–2 pages); grey-box and white-box named as excluded |
-| Label table | OWASP API and ATT&CK |
-| Hardening checklist | 2–4 pages for the locked class across the family |
-| Demonstration | 10–15 minutes, at least two applications shown |
+| Lab set | Docker copies of every running app, pinned to a specific version, plus a log of any that didn't start |
+| Main-weakness record | The chosen OWASP category, the prompt used, the AI's reply, and the date |
+| Evaluation pack | Tables by app and tool, raw scanner reports, and the AI-call log |
+| Report | 20-30 pages |
+| Taxonomy note | One to two pages explaining how my tester maps to Peng's six dimensions, and why grey-box and white-box testing were excluded |
+| Label table | OWASP API and ATT&CK codes for confirmed findings |
+| Hardening checklist | Two to four pages covering the chosen weakness across the app family |
+| Demonstration | 10-15 minutes, showing at least two apps |
 
 ---
 
 ## 13. Report outline
 
-1. Introduction and research questions  
-2. Background: fitness-application threats (Papageorgiou et al.) + access-control evidence shape (Sun et al.) + Peng taxonomy (knowledge levels, six dimensions, findings adopted; why empirical work is black-box only)  
-3. Related work (five papers with the Section 6.4 map + tools not run)  
-4. Targets: the five-application corpus, what started, what dropped ([`Phase-1-Lab-Log.md`](Phase-1-Lab-Log.md))  
-5. Method: three tools, findings-to-techniques map (Sections 6.5–6.6), black-box protocol, AI main-class definition, metrics, ethics, LLM backbones  
-6. Work-plan recap (Phases 0–8, one page)  
-7. Results: RQ1–RQ3 tables (class lock, hit rate, hallucinations, retest)  
-8. Discussion: what to upgrade first on this product family; what Peng et al. predicted that was observed  
-9. Limitations (chosen LLM backbone, no grey-box, no white-box, fixes on one or two applications only)  
-10. Conclusion  
+1. Introduction and research questions
+2. Background: fitness-app threats (Papageorgiou et al.), what an access-control finding looks like (Sun et al.), and the Peng taxonomy (knowledge levels, six dimensions, why testing stays black-box)
+3. Related work: the five papers, mapped as in Section 6.4, plus tools considered and not run
+4. Targets: the five apps, what started and what didn't
+5. Method: the three tools, what's actually run versus only used as labels, the black-box protocol, how the AI names the main category, metrics, ethics, and model choice
+6. Work-plan recap (one page)
+7. Results: RQ1 through RQ3, with the chosen category, hit rate, false-success count, and retest outcome
+8. Discussion: what to fix first in this app family, and what Peng et al. predicted that actually showed up here
+9. Limitations: model choice, no grey-box or white-box testing, fixes applied to only one or two apps
+10. Conclusion
 
-Appendices: versions, prompts, finding identifiers, token log, Nuclei template identifiers used, main-weakness card.
+Appendices: tool versions, prompts used, finding IDs, the AI-call log, Nuclei template IDs, and the main-weakness record.
 
 ---
 
@@ -663,114 +522,73 @@ Appendices: versions, prompts, finding identifiers, token log, Nuclei template i
 
 | Weeks | Phase | Hours |
 | --- | --- | --- |
-| 1 | 0 Frame | 15 |
-| 2–4 | 1 Corpus (five stacks, sequential) | 50 |
-| 5–6 | 2 Screen all applications (ZAP and Nuclei) | 40 |
-| 7 | 3–4 AI main class and focused HITL | 25 |
-| 8 | 5 Review and labels | 20 |
-| 9–10 | 6 Fixes on one or two forks | 25 |
-| 10–11 | 7 Black-box retest | 20 |
-| 12–13 | 8 Report | 40 |
-| 14 | Buffer, demonstration | 20 |
-| **Total** | | **~255 hours** |
+| 1 | 0: Set the frame | 15 |
+| 2-4 | 1: Bring up the apps | 50 |
+| 5-6 | 2: First pass on every app | 40 |
+| 7 | 3-4: AI names the weakness, then focused testing | 25 |
+| 8 | 5: Review and label | 20 |
+| 9-10 | 6: Fix one or two apps | 25 |
+| 10-11 | 7: Retest | 20 |
+| 12-13 | 8: Write the report | 40 |
+| 14 | Buffer and demo | 20 |
+| **Total** | | **~255** |
 
-Controls that keep the project inside one semester: screen all applications / fix few; one locked class. A sixth application or a fourth scored product is not added.
-
----
-
-## 15. Required skills
-
-HTTP APIs, Docker, reading OWASP API Top 10, and honest scientific writing. OSCP, reverse engineering, and machine-learning research are not required. Supervision in software security or software engineering is sufficient.
+What keeps this inside one semester: scan every app but only fix a couple, and stick to one chosen weakness instead of chasing every finding.
 
 ---
 
-## 16. Ethics, privacy, and legal constraints
+## 15. Ethics, privacy, and legal notes
 
-- Only self-hosted instances; never production fitness SaaS.
-- Synthetic names and health values only.
-- Local LLMs keep traces on the machine. Cloud LLMs are allowed; send only truncated synthetic laboratory traffic (no real names, no real health values, no full dumps) and record in the ethics appendix that prompts left the machine.
-- No exploit recipes or payloads in the public report — classes and fixes only.
-- The AI main-class prompt asks for an OWASP identifier, not a working attack.
-- Private logs; public aggregated tables.
-- One-page ethics appendix, signed in week 2.
-- Dual-use is named as in Peng §8 and Happe §6: testers are studied in order to harden applications. No phishing or vishing copy (Happe already refused that slice).
-- The overnight loop is in scope because Happe flagged unsupervised loops as the risky shape and Peng asked whether extra autonomy helps. It is measured on one application with a kill switch, not treated as the default.
-
----
-
-## 17. Risks and mitigations
-
-| Risk | Mitigation |
-| --- | --- |
-| An application will not start | Dropout log; keep at least four; optional LibreFit substitute |
-| Endurain too heavy | Skip with RAM note; corpus remains valid |
-| Agent implementation fails | 15-prompt notebook; still T3 (define and test) |
-| Host cannot run several stacks at once | Run one Docker stack at a time |
-| Local LLM unavailable or too weak | Switch T3 to a cloud LLM; log the switch; 15-prompt notebook remains a fallback |
-| AI names an empty or garbage class | One rerun; then lock or report “definition failed” (valid RQ2) |
-| Nuclei template noise | Restrict to HTTP / exposed-panels classes; state the filter |
-| Almost no findings | Valid result; checklist still from claimed class and literature |
-| Many hallucinations | Answers RQ2; count them |
-| Temptation to pick a favourite class by hand | The locked class must come from the definition session |
-| Temptation to add Semgrep or source-in-prompt | Grey-box is out of the empirical scope |
-| Temptation to add a fourth agent product | Breaks Peng’s “more tools ≠ better” finding |
-
-The research questions remain unchanged under these mitigations.
+- Only self-hosted copies are tested, never production fitness apps.
+- All accounts and health values are made up.
+- Local models keep everything on my own machine. Cloud models are allowed, but only short, synthetic lab data is sent, never a full scan dump, and I record in the ethics appendix whenever a prompt leaves the machine.
+- No exploit recipes or working payloads appear in the public report, only categories and fixes.
+- The naming prompt asks the AI for an OWASP category, not a working attack.
+- Detailed logs stay private; only aggregated tables are published.
+- A one-page ethics appendix gets signed in week 2.
+- I'm studying AI testers in order to help defenders, not attackers, so no phishing- or social-engineering-style content gets generated.
+- The overnight run happens on exactly one app, with a timer, because Happe and Cito flagged unsupervised AI as the riskier setup, and Peng et al. asked whether that extra autonomy actually helps.
 
 ---
 
-## 18. Request for approval
+## 18. What I'm asking the supervisor to approve
 
-The student requests supervisory approval of:
+1. the in-scope and out-of-scope lists in Section 8
+2. local and/or cloud AI models as valid ways to run the tester (Section 9.0)
+3. three tools, black-box testing only, no grey-box or white-box work
+4. the five apps in Section 5, with four running counted as a pass
+5. the AI naming the main weakness, rather than me choosing it
+6. fixes applied to only one or two app copies
+7. OWASP and ATT&CK used purely as labels, not as a full attack-emulation lab
+8. the ethics approach: synthetic data, no production systems, no exploit publication
+9. Peng et al. as the source of vocabulary rather than something to replicate at full scale, with the other four papers as design evidence rather than extra experiments
 
-1. the in-scope and out-of-scope lists (Section 8);
-2. local and/or cloud LLMs as T3 backbones (Section 9.0);
-3. three instruments and black-box-only empirical work (white-box and grey-box out of the empirical scope);
-4. the five applications in Section 5 as the corpus (pass: at least four running);
-5. AI-defined main weakness (one locked OWASP API class);
-6. fixes on one or two forks only;
-7. ATT&CK and OWASP used as labels only;
-8. ethics (synthetic data, no production, no exploit publication);
-9. Peng et al. as the taxonomy source, not as an experiment to replicate at scale; Deng, Happe, Sun, and Papageorgiou as design evidence (Section 6.4), not extra laboratories.
-
-**Week-2 kick-off expected by the supervisor:** first two applications up with image pins; T3 backbone proof (local and/or cloud); two-page protocol.
+Week-2 kickoff deliverable: the first two apps running with version pins, proof that the AI tester can call a local and/or cloud model, and the two-page protocol.
 
 ---
 
-## 19. References
+## 17. References
 
-[1] G. Deng, Y. Liu, V. Mayoral-Vilches, P. Liu, Y. Li, Y. Xu, T. Zhang, Y. Liu, M. Pinzger, and S. Rass, “PentestGPT: Evaluating and harnessing large language models for automated penetration testing,” in *Proc. 33rd USENIX Security Symposium*, 2024, pp. 847–864.
+[1] G. Deng, Y. Liu, V. Mayoral-Vilches, P. Liu, Y. Li, Y. Xu, T. Zhang, Y. Liu, M. Pinzger, and S. Rass, "PentestGPT: Evaluating and harnessing large language models for automated penetration testing," in *Proc. 33rd USENIX Security Symposium*, 2024, pp. 847-864.
 
-[2] A. Happe and J. Cito, “Getting pwn’d by AI: Penetration testing with large language models,” in *Proc. 31st ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering (ESEC/FSE)*, 2023, pp. 2082–2086, doi: 10.1145/3611643.3613083.
+[2] A. Happe and J. Cito, "Getting pwn'd by AI: Penetration testing with large language models," in *Proc. 31st ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering*, 2023, pp. 2082-2086.
 
-[3] Peng, Li, You, et al., “Hackers or hallucinators? A comprehensive analysis of LLM-based automated penetration testing,” arXiv:2604.05719, 2026.
+[3] Peng, Li, You, et al., "Hackers or hallucinators? A comprehensive analysis of LLM-based automated penetration testing," arXiv:2604.05719, 2026.
 
-[4] F. Sun, L. Xu, and Z. Su, “Static detection of access control vulnerabilities in Web applications,” in *Proc. 20th USENIX Security Symposium*, 2011.
+[4] F. Sun, L. Xu, and Z. Su, "Static detection of access control vulnerabilities in Web applications," in *Proc. 20th USENIX Security Symposium*, 2011.
 
-[5] A. Papageorgiou, M. Strigkos, E. Politou, E. Alepis, A. Solanas, and C. Patsakis, “Security and privacy analysis of mobile health applications: The alarming state of practice,” *IEEE Access*, vol. 6, pp. 9390–9403, 2018, doi: 10.1109/ACCESS.2018.2799522.
+[5] A. Papageorgiou, M. Strigkos, E. Politou, E. Alepis, A. Solanas, and C. Patsakis, "Security and privacy analysis of mobile health applications: The alarming state of practice," *IEEE Access*, vol. 6, pp. 9390-9403, 2018.
 
-**Standards used as labels only (not among the five research papers):** OWASP API Security Top 10 (2023); MITRE ATT&CK.
-
-**Where each paper is used in this proposal**
-
-| Paper | Finding that supports this proposal | Sections |
-| --- | --- | --- |
-| Deng et al. [1] | Memory and HITL beat naive chat; count sub-tasks and cost | Method T3, Sections 9.0–9.1, RQ2 |
-| Happe and Cito [2] | Sparring partner and ethics fence | HITL versus overnight, labels, ethics |
-| Peng et al. [3] | Taxonomy, black-box cut, swarm/tool/RAG/hallucination results | Section 6, RQ1–RQ2, tool count |
-| Sun et al. [4] | Two-account object check is the authorisation evidence | Corpus, focused test, RQ3 fixes if that class locks |
-| Papageorgiou et al. [5] | Fitness/health family is a serious privacy target | Motivation, ethics, checklist |
-
-The report is not expanded into a second survey of Aikido, Thorfinn, or Caldera.
+The OWASP API Security Top 10 (2023) and the MITRE ATT&CK matrix are used as labeling standards, not counted among these five research papers.
 
 ---
 
-## Appendix A. Kick-off checklist
+## Appendix A. Kickoff checklist
 
-1. Confirm the one-semester format with the supervisor (this document).
-2. Bring up Workout.cool first, then FitTrackee, openGym, FitnessTrack, Endurain; log dropouts; do not stop at one application.
-3. Install ZAP and Nuclei; confirm a local and/or cloud LLM; build the new AutoPT agent (HITL first).
-4. Screen all running applications before the AI definition session.
-5. Lock one main weakness class from the AI; do not override it with a favourite.
-6. Keep the facts file and call log from the first LLM call.
-7. After confirmed findings, fill OWASP/ATT&CK. Do not install Caldera. Do not add a grey-box or white-box campaign.
+1. Confirm the one-semester format with the supervisor using this document.
+2. Bring up Workout.cool first, then FitTrackee, openGym, FitnessTrack, and Endurain, logging any that don't start.
+3. Install ZAP and Nuclei, confirm a local and/or cloud model works, and build the tester, starting with the person-driven mode.
+4. Scan every running app before running the naming session.
+5. Keep whichever weakness the AI names, without overriding it with a personal favorite.
+6. Maintain the notes file and the AI-call log from the very first call.
+7. Once findings are confirmed, fill in the OWASP and ATT&CK labels, without adding a grey-box or white-box round.

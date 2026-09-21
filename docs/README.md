@@ -4,7 +4,8 @@ Reading and planning files for the semester project. Runtime notes live under [`
 
 ```
 docs/
-├── Master-Semester-Project-Proposal.md
+├── Master-Semester-Project-Proposal.md      ← current
+├── Master-Semester-Project-Proposal-v1.md   ← first version (7 Sep 2026)
 ├── Phase-1-Lab-Log.md
 ├── AI-Pentesting-Tools-Research-Catalog.md
 └── papers/          ← five cited papers
@@ -12,7 +13,8 @@ docs/
 
 | File | Use |
 | --- | --- |
-| [Master-Semester-Project-Proposal.md](Master-Semester-Project-Proposal.md) | Official proposal (scope, RQs, method, ethics) |
+| [Master-Semester-Project-Proposal.md](Master-Semester-Project-Proposal.md) | Current proposal (scope, RQs, method, ethics) |
+| [Master-Semester-Project-Proposal-v1.md](Master-Semester-Project-Proposal-v1.md) | First version (Wger, ZAP + PentestGPT/Ollama, 7 September 2026) |
 | [Phase-1-Lab-Log.md](Phase-1-Lab-Log.md) | Phase 1 corpus outcome (pins, two-user status) |
 | [Papers-Tools-Extract.md](Papers-Tools-Extract.md) | Named tools in the five papers (who used them, how, why) |
 | [AI-Pentesting-Tools-Research-Catalog.md](AI-Pentesting-Tools-Research-Catalog.md) | Background landscape; not a fourth scored tool |
